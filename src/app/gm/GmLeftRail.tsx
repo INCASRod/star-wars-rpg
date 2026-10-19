@@ -141,6 +141,18 @@ export const GmLeftRail = memo(function GmLeftRail({
           lineHeight:    1,
         }}>Galaxy</span>
       </a>
+
+      {/* Very bottom of the rail, below every other button: GM Settings (Players and invites, future account and campaign settings). */}
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ width: '1.75rem', height: 1, background: 'var(--hud-border-hi)', margin: '0.375rem 0' }} />
+        <RailBtn
+          icon="⚙"
+          label="Settings"
+          active={false}
+          accent={HUD.gold}
+          onClick={() => window.location.assign(`/gm/settings${campaignId ? `?campaign=${campaignId}` : ''}`)}
+        />
+      </div>
     </div>
   )
 })

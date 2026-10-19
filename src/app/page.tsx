@@ -10,6 +10,8 @@ import { HUD, CHAR_COLOR, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z, EASE } fro
 import { useCharacterSelectStore } from '@/store/characterSelectStore'
 import { TransitionCard } from '@/components/ui/TransitionCard'
 import { prefetchCharacterData } from '@/lib/characterDataPrefetch'
+import { AuthStatus } from '@/components/auth/AuthStatus'
+import type { User } from '@supabase/supabase-js'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG        = 'var(--hud-bg)'
@@ -62,6 +64,8 @@ function getSessionKey(): string {
 interface CharacterCardProps {
   char:            Character
   state:           CardState
+  /** The signed-in account is bound to this character (players.user_id): gold border + YOU pill. */
+  isYou?:          boolean
   online:          boolean
   animDelay:       number
   onSelect:        (rect: DOMRect) => void
@@ -71,14 +75,16 @@ interface CharacterCardProps {
 }
 
 function CharacterCard({
-  char, state, online,
+  char, state, online, isYou,
   animDelay, onSelect, onDelete,
   hyperTransform, hyperOpacity,
 }: CharacterCardProps) {
   const [hovered, setHovered] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
-  const cardBorder = state === 'self'
+  const cardBorder = isYou
+    ? HUD.gold
+    : state === 'self'
     ? BORDER_HI
     : hovered
       ? 'color-mix(in srgb, var(--hud-accent) 65%, transparent)'
@@ -282,6 +288,19 @@ function CharacterCard({
                 </>
               )}
             </div>
+            {isYou && (
+              <div style={{
+                marginTop: '3px', marginLeft: '4px',
+                display: 'inline-flex', alignItems: 'center',
+                border: `1px solid ${HUD.gold}`, borderRadius: RADIUS.full,
+                padding: '1px 6px',
+                fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                letterSpacing: '0.12em', color: HUD.gold,
+                background: 'color-mix(in srgb, var(--gold) 14%, transparent)',
+              }}>
+                YOU
+              </div>
+            )}
           </div>
         </div>
 
@@ -546,6 +565,10 @@ export default function Home() {
   const [sessionKey] = useState<string>(() => typeof window !== 'undefined' ? getSessionKey() : '')
   const [onlineKeys, setOnlineKeys] = useState<string[]>([])
   const [sessionMode, setSessionMode] = useState<string>('exploration')
+  const [authUser, setAuthUser] = useState<User | null>(null)
+  const [minePlayerIds, setMinePlayerIds] = useState<Set<string>>(new Set())
+  // Characters owned by the signed-in account (empty when signed out).
+  const youIds = new Set(authUser ? characters.filter(c => minePlayerIds.has(c.player_id)).map(c => c.id) : [])
   const [createHovered, setCreateHovered] = useState(false)
 
   const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
@@ -562,6 +585,24 @@ export default function Home() {
   const campaignIdRef = useRef<string | null>(null)
 
   // ── Data load ──────────────────────────────────────────────────────────────
+  // Who is signed in (optional: a player with no login keeps playing as before).
+  useEffect(() => {
+    const supabase = createClient()
+    void supabase.auth.getUser().then(({ data }) => setAuthUser(data.user))
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setAuthUser(session?.user ?? null))
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  // The character the signed-in account owns: players.user_id -> characters.player_id (not character_sessions).
+  useEffect(() => {
+    if (!authUser) return
+    let live = true
+    void createClient().from('players').select('id').eq('user_id', authUser.id).then(({ data }) => {
+      if (live) setMinePlayerIds(new Set((data ?? []).map(p => p.id as string)))
+    })
+    return () => { live = false }
+  }, [authUser])
+
   useEffect(() => {
     async function load() {
       const supabase = createClient()
@@ -908,6 +949,9 @@ export default function Home() {
             }} />
             HOLOCRON
           </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <AuthStatus user={authUser} />
+          </div>
         </div>
 
         {/* Session Status Bar */}
@@ -1006,6 +1050,7 @@ export default function Home() {
                 key={char.id}
                 char={char}
                 state={cardState}
+                isYou={youIds.has(char.id)}
                 online={online}
                 animDelay={0.15 + index * 0.08}
                 onSelect={(rect) => handleCardSelect(char.id, rect)}

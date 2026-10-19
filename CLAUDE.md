@@ -134,7 +134,8 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 - **GM = a signed-in user bound to a GM `players` row.** `public.is_gm()` (migration 148) is the only definition. The PIN is gone from the UI and the client (`campaigns.gm_pin` still exists and is still anon-readable by direct REST and in realtime payloads until the RLS lock-down; no client selects it).
 - **Gates are server-side.** `src/proxy.ts` guards `/gm/*` and `?gm=1` on `/character/*`; `requireGm()` guards `/api/anthropic`, `/api/fal`, `/api/fal-edit`. `useIsGm()` is a UI convenience only: never rely on it for access. New GM-only route? Add it under `/gm/` or call `requireGm()`.
 - `scripts/auth/make-gm.ts <email>` binds a logged-in account to the one unbound `is_gm` players row (stops if it is not exactly one). CC test accounts are described in the Auth changelog; credentials live only in `.env.local`.
-- Staged build (see `Prompts/2026-10-19_auth/brief.md`): B1 foundation (this), B2 invites + Settings, B3 Preview Only, B4+ RLS lock-down, anon policies and the PIN column removed last.
+- **Invites (B2, migration 149).** A character is bound to an account only through `claim_invite()` (one-time token, stored as a hash, GM-created in `/gm/settings`) or `make-gm`. Never `.update()` `players.user_id` from a component. One account per `players` row per campaign is a database constraint. GM rows are never invitable or unbindable from the UI. The landing page's YOU tag and "Signed in as" header read `players.user_id`, not `character_sessions`.
+- Staged build (see `Prompts/2026-10-19_auth/brief.md`): B1 foundation, B2 invites + Settings (done), B3 Preview Only, B4+ RLS lock-down, anon policies and the PIN column removed last.
 
 ---
 

@@ -1,0 +1,19 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--hud-surface-mid);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+}
+.portrait {
+  width: 4.5rem;
+  height: 4.5rem;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--hud-border-hi);
+}
+.name { font-size: var(--text-h4); font-weight: 700; color: var(--hud-text); }
+.role { margin-top: var(--space-1); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--hud-text-dim); }
