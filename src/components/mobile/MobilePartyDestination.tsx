@@ -36,19 +36,17 @@ function outcomeWord(netSuccess: number): { label: string; cls: string } {
 
 function NetPills({ result }: { result: RollEntry['result'] }) {
   const entries: [SymbolKey, number][] = [
-    ['S', result.netSuccess], ['A', result.netAdvantage], ['T', result.triumph], ['D', result.despair],
+    [result.netSuccess > 0 ? 'S' : 'F', result.netSuccess], [result.netAdvantage > 0 ? 'A' : 'H', result.netAdvantage],
+    ['T', result.triumph], ['D', result.despair],
   ]
   return (
     <>
       {entries.map(([key, count]) => {
         if (count === 0) return null
         const sym = SYM[key]
-        const label = key === 'S' ? (count > 0 ? 'Success' : 'Failure')
-          : key === 'A' ? (count > 0 ? 'Advantage' : 'Threat')
-          : key === 'T' ? 'Triumph' : 'Despair'
         return (
           <span key={key} className="m-cr-pill" style={{ color: sym.color, borderColor: sym.color /* symbol-identity colour — sealed namespace */ }}>
-            {Math.abs(count)} {label}
+            {Math.abs(count)} {sym.label}
           </span>
         )
       })}

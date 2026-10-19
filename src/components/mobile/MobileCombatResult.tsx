@@ -9,12 +9,9 @@ import type { DiceType } from '@/lib/tokens'
 
 function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
   if (count === 0) return null
-  const label = symKey === 'S' ? (count > 0 ? 'Success' : 'Failure')
-    : symKey === 'A' ? (count > 0 ? 'Advantage' : 'Threat')
-    : symKey === 'T' ? 'Triumph' : 'Despair'
   return (
     <span className="m-cr-pill" style={{ color: SYM[symKey].color, borderColor: SYM[symKey].color /* die-identity/symbol colour — sealed namespace */ }}>
-      {Math.abs(count)} {label}
+      {Math.abs(count)} {SYM[symKey].label}
     </span>
   )
 }
@@ -45,8 +42,8 @@ export function MobileCombatResult({ result, weaponName, netDamageEstimate, crit
       </div>
 
       <div className="m-cr-pills">
-        <NetPill count={result.net.success} symKey="S" />
-        <NetPill count={result.net.advantage} symKey="A" />
+        <NetPill count={result.net.success} symKey={result.net.success > 0 ? 'S' : 'F'} />
+        <NetPill count={result.net.advantage} symKey={result.net.advantage > 0 ? 'A' : 'H'} />
         <NetPill count={result.net.triumph} symKey="T" />
         <NetPill count={result.net.despair} symKey="D" />
       </div>
