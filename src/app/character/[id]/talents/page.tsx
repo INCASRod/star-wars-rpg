@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useTalentSurfaceData } from '@/hooks/useTalentSurfaceData'
+import { useCharacterAccess } from '@/hooks/useCharacterAccess'
+import { ViewModeProvider } from '@/contexts/ViewModeContext'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { buildCharacterTalentTree } from '@/lib/buildTalentTree'
 import { computeCareerSkillKeys } from '@/lib/characters'
@@ -24,8 +26,24 @@ import styles from '@/components/character/TalentSurface.module.css'
 export default function TalentsPage() {
   return (
     <Suspense fallback={<CharacterLoader />}>
-      <TalentsPageInner />
+      <TalentsPageGate />
     </Suspense>
+  )
+}
+
+// Preview Only has no purchase surface: a signed-in player bound to another character is sent to that build's preview.
+function TalentsPageGate() {
+  const params = useParams()
+  const router = useRouter()
+  const characterId = params.id as string
+  const access = useCharacterAccess(characterId)
+  const isPreview = access.status === 'ready' && access.mode === 'preview'
+  useEffect(() => { if (isPreview) router.replace(`/character/${characterId}`) }, [isPreview, router, characterId])
+  if (access.status === 'loading' || isPreview) return <CharacterLoader />
+  return (
+    <ViewModeProvider mode={access.mode}>
+      <TalentsPageInner />
+    </ViewModeProvider>
   )
 }
 

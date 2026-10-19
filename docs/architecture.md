@@ -11,6 +11,7 @@
 |---|---|---|
 | `/` | `page.tsx` | Landing / join page |
 | `/login` | `page.tsx` + `LoginForm.tsx` | Sign in (Discord, Google, email + password, email link, forgot password, create account). `?next=` is the post-login path (`safeNext`: same-origin paths only). `/login/reset` sets a new password after the reset email. |
+| `/character/[id]` (Preview Only, Auth B3) | `page.tsx` + `components/preview/CharacterPreview.tsx` | `useCharacterAccess(id)` decides `owner` / `gm` / `preview`. A viewer who is signed in AND bound to a different character gets `CharacterPreview` instead of the HUD or mobile shell: read-only characteristics, skills, talents with spec trees (`TalentSurface`, nodes forced `canPurchase: false`, no handlers, no `sig`) and Force power trees, plus a locked chip "Inventory, notes, backstory: private" and a sticky gold banner with "Back to my character". Same component on desktop (left nav) and mobile (top tabs, tree scrolls sideways). Nothing from the HUD is mounted, so no session claim, presence, notification or pending-action feed. `/character/[id]/talents` redirects a previewing viewer to the preview. Signed-out, unbound and GM viewers are unchanged. |
 | `/gm/settings` | `page.tsx` + `SettingsShell.tsx` + `PlayersAndInvites.tsx` | GM Settings shell (sections; one today: Players and invites). Characters table with status pill (Bound / Invite sent / Invite expired / No invite), account name and provider or expiry, actions Unbind, Copy link, Reissue, Revoke, Create invite (expiry 24 h / 7 days / 30 days). A created link is held in this tab's memory only (the database keeps a hash), so Copy link works only until the page is left; after that use Reissue. Opened from the cogwheel at the very bottom of `GmLeftRail`. Proxy-gated. |
 | `/invite/[token]` | `page.tsx` + `InviteClaim.tsx` | Public claim page. `invite_preview` (works signed out) -> character card; signed out: Claim with Discord / Google / email link (via `/login?next=`); signed in: explicit Claim button -> `claim_invite` -> `/`. Dead links (expired, used, revoked, unknown) all show one message. |
 | `/auth/callback` | `route.ts` | GET: swaps the one-time `code` (OAuth, magic link, email confirm, reset) for a session cookie, then redirects to `next`. Failure goes to `/login?error=callback`. |
@@ -169,6 +170,10 @@
 ### `useStowLocations(campaignId)`
 - Loads stowable `group_assets` (vehicles, starships, safe houses) for item stow location UI
 - Returns: `{ stowableAssets, baseOfOperationsName }`
+
+### `useCharacterAccess(characterId)` (`src/hooks/useCharacterAccess.ts`)
+- Auth B3. Returns `{ status, mode: 'owner' | 'gm' | 'preview', ownCharacterId }`. No session -> owner (today's behaviour); `is_gm()` -> gm; signed in with `players.user_id` bound to a live character that is not this one -> preview; bound to none, or to this one -> owner. UI only: nothing in the database depends on it until the RLS lock-down.
+- `ViewModeProvider` / `useViewMode()` (`src/contexts/ViewModeContext.tsx`) carry `{ mode, canWrite }` and, in preview, switch on the client write guard below.
 
 ### `useIsGm()` (`src/hooks/useIsGm.ts`)
 - Returns `true | false | null` (null while checking): signed-in user and `public.is_gm()`. Re-checks on auth state change. UI convenience only (GroupSheet GM controls); the real gate is `src/proxy.ts` and, later, RLS.

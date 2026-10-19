@@ -66,6 +66,8 @@ interface CharacterCardProps {
   state:           CardState
   /** The signed-in account is bound to this character (players.user_id): gold border + YOU pill. */
   isYou?:          boolean
+  /** A signed-in, bound viewer looking at someone else's character: opens Preview Only (no session claim). */
+  isPreview?:      boolean
   online:          boolean
   animDelay:       number
   onSelect:        (rect: DOMRect) => void
@@ -75,7 +77,7 @@ interface CharacterCardProps {
 }
 
 function CharacterCard({
-  char, state, online, isYou,
+  char, state, online, isYou, isPreview,
   animDelay, onSelect, onDelete,
   hyperTransform, hyperOpacity,
 }: CharacterCardProps) {
@@ -288,6 +290,22 @@ function CharacterCard({
                 </>
               )}
             </div>
+            {isPreview && (
+              <div style={{ marginTop: '3px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+                  border: `1px solid ${TEXT_MUT}`, borderRadius: RADIUS.full,
+                  padding: '1px 6px',
+                  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                  letterSpacing: '0.12em', color: TEXT_SEC,
+                }}>
+                  PREVIEW
+                </span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT_MUT, whiteSpace: 'nowrap' }}>
+                  View build
+                </span>
+              </div>
+            )}
             {isYou && (
               <div style={{
                 marginTop: '3px', marginLeft: '4px',
@@ -802,6 +820,12 @@ export default function Home() {
   function handleCardSelect(charId: string, rect: DOMRect) {
     if (hyper.phase !== 'idle') return
 
+    // Signed-in and bound to a character: any OTHER card opens Preview Only directly (no session claim, no animation).
+    if (youIds.size > 0 && !youIds.has(charId)) {
+      router.push(`/character/${charId}${campaignId ? `?campaign=${campaignId}` : ''}`)
+      return
+    }
+
     // Prompt A — fire the sheet's cold-load query batch now, not after the
     // ~5.6s hyperspace animation finishes. Fire-and-forget: never throws,
     // never blocks/delays the animation below, and useCharacterData's own
@@ -1051,6 +1075,7 @@ export default function Home() {
                 char={char}
                 state={cardState}
                 isYou={youIds.has(char.id)}
+                isPreview={youIds.size > 0 && !youIds.has(char.id)}
                 online={online}
                 animDelay={0.15 + index * 0.08}
                 onSelect={(rect) => handleCardSelect(char.id, rect)}
