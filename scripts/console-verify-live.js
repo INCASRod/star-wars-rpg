@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* NOTE (Auth B4): console_* tables are GM-only under RLS, so the anon key used here now reads nothing and this
+   check fails by design. It needs a GM session token instead; not converted yet. */
 /* Step 2: run blocksToDoc/docToBlocks over every live document and assert identity.
    READ ONLY. This script never issues anything but GET, and asserts that before it runs.
 

@@ -12,10 +12,9 @@
  *   npx tsx scripts/console-import.ts --file path/to/export.lor.json --campaign <uuid>
  *   npx tsx scripts/console-import.ts --file path/to/export.lor.json --campaign <uuid> --apply
  *
- * Uses the same Supabase client path the app itself uses — @supabase/supabase-js
- * with the anon key (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
- * from .env.local) — so the import exercises the same RLS path the browser
- * will, rather than a privileged DATABASE_URL/service-role connection.
+ * Writes through DATABASE_URL (.env.local), in ONE transaction: since Auth B4 these
+ * three tables are GM-only under RLS, so the old anon-key path is refused. A failed
+ * write rolls everything back. Nothing secret is printed.
  *
  * The `body` field on documents is a derived plain-text duplicate of `blocks`
  * and is stripped before storage ONLY when `blocks` is a non-empty array. For a
@@ -26,7 +25,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
-import { createClient } from '@supabase/supabase-js'
+import postgres from 'postgres'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -229,42 +228,39 @@ if (!APPLY) {
 
 // ── Apply ─────────────────────────────────────────────────────────────────────
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-if (!url || !anonKey) fail('NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY required in .env.local')
-
-const supabase = createClient(url, anonKey)
+if (!process.env.DATABASE_URL) fail('DATABASE_URL required in .env.local')
+const sql = postgres(process.env.DATABASE_URL, { max: 1 })
+const CAMPAIGN = CAMPAIGN_ID as string // validated at the top of the file
 
 async function apply() {
-  console.log('\nApplying...')
+  console.log('\nApplying (one transaction)...')
 
-  const { error: campaignErr } = await supabase
-    .from('console_campaign_state')
-    .upsert({ campaign_id: CAMPAIGN_ID, data: parsed.campaign }, { onConflict: 'campaign_id' })
-  if (campaignErr) fail(`console_campaign_state write failed: ${campaignErr.message}`)
+  try {
+    await sql.begin(async (txn) => {
+      const tx = txn as unknown as postgres.Sql // postgres' TransactionSql loses its call signature under Omit<>
+      await tx`
+        insert into console_campaign_state (campaign_id, data)
+        values (${CAMPAIGN}, ${tx.json(parsed.campaign as unknown as postgres.JSONValue)})
+        on conflict (campaign_id) do update set data = excluded.data`
 
-  if (docPlans.length > 0) {
-    const rows = docPlans.map((d) => ({
-      campaign_id: CAMPAIGN_ID,
-      id: d.id,
-      title: d.title,
-      folder: d.folder,
-      blocks: d.blocks,
-      data: d.data,
-    }))
-    const { error } = await supabase.from('console_documents').upsert(rows, { onConflict: 'campaign_id,id' })
-    if (error) fail(`console_documents write failed: ${error.message}`)
-  }
+      for (const d of docPlans) {
+        await tx`
+          insert into console_documents (campaign_id, id, title, folder, blocks, data)
+          values (${CAMPAIGN}, ${d.id}, ${d.title}, ${d.folder}, ${tx.json(d.blocks as unknown as postgres.JSONValue)}, ${tx.json(d.data as unknown as postgres.JSONValue)})
+          on conflict (campaign_id, id) do update
+            set title = excluded.title, folder = excluded.folder, blocks = excluded.blocks, data = excluded.data`
+      }
 
-  if (recordPlans.length > 0) {
-    const rows = recordPlans.map((r) => ({
-      campaign_id: CAMPAIGN_ID,
-      kind: r.kind,
-      id: r.id,
-      data: r.data,
-    }))
-    const { error } = await supabase.from('console_records').upsert(rows, { onConflict: 'campaign_id,kind,id' })
-    if (error) fail(`console_records write failed: ${error.message}`)
+      for (const r of recordPlans) {
+        await tx`
+          insert into console_records (campaign_id, kind, id, data)
+          values (${CAMPAIGN}, ${r.kind}, ${r.id}, ${tx.json(r.data as unknown as postgres.JSONValue)})
+          on conflict (campaign_id, kind, id) do update set data = excluded.data`
+      }
+    })
+  } catch (e) {
+    await sql.end()
+    fail(`import failed, nothing written: ${(e as Error).message}`)
   }
 
   console.log('Writes complete. Round-trip verifying...\n')
@@ -275,19 +271,14 @@ async function verify() {
   let anyFail = false
   const results: { collection: string; expected: number; actual: number; pass: boolean; note: string }[] = []
 
-  const { data: campaignRow, error: campaignReadErr } = await supabase
-    .from('console_campaign_state')
-    .select('data')
-    .eq('campaign_id', CAMPAIGN_ID)
-    .maybeSingle()
-  const campaignPass = !campaignReadErr && !!campaignRow &&
-    deepEqualCanonical(campaignRow.data, parsed.campaign)
+  const [campaignRow] = await sql<{ data: unknown }[]>`select data from console_campaign_state where campaign_id = ${CAMPAIGN}`
+  const campaignPass = !!campaignRow && deepEqualCanonical(campaignRow.data, parsed.campaign)
   results.push({
     collection: 'campaign',
     expected: 1,
     actual: campaignRow ? 1 : 0,
     pass: campaignPass,
-    note: campaignReadErr ? campaignReadErr.message : campaignPass ? 'content matches' : 'content mismatch (see diff below)',
+    note: campaignPass ? 'content matches' : 'content mismatch (see diff below)',
   })
   if (!campaignPass && campaignRow) {
     console.error('\ncampaign content mismatch — canonical diff:')
@@ -295,16 +286,10 @@ async function verify() {
   }
   if (!campaignPass) anyFail = true
 
-  const { data: docRows, error: docReadErr } = await supabase
-    .from('console_documents')
-    .select('id, blocks')
-    .eq('campaign_id', CAMPAIGN_ID)
-  if (docReadErr) {
-    results.push({ collection: 'docs', expected: docPlans.length, actual: 0, pass: false, note: docReadErr.message })
-    anyFail = true
-  } else {
-    const byId = new Map((docRows ?? []).map((r: any) => [r.id, r]))
-    let docsOk = (docRows?.length ?? 0) === docPlans.length
+  const docRows = await sql<{ id: string; blocks: any[] | null }[]>`select id, blocks from console_documents where campaign_id = ${CAMPAIGN}`
+  {
+    const byId = new Map(docRows.map((r) => [r.id, r]))
+    let docsOk = docRows.length === docPlans.length
     let blockMismatch = ''
     for (const plan of docPlans) {
       const row = byId.get(plan.id)
@@ -313,18 +298,19 @@ async function verify() {
         blockMismatch = `doc "${plan.id}" missing on read-back`
         break
       }
-      const gotIds = (row.blocks ?? []).map((b: any) => b?.id)
+      const blocks = row.blocks ?? []
+      const gotIds = blocks.map((b: any) => b?.id)
       const wantIds = plan.blocks.map((b: any) => b?.id)
-      if (row.blocks.length !== plan.blocks.length || JSON.stringify(gotIds) !== JSON.stringify(wantIds)) {
+      if (blocks.length !== plan.blocks.length || JSON.stringify(gotIds) !== JSON.stringify(wantIds)) {
         docsOk = false
-        blockMismatch = `doc "${plan.id}" block count/id sequence mismatch (want ${wantIds.length}, got ${row.blocks.length})`
+        blockMismatch = `doc "${plan.id}" block count/id sequence mismatch (want ${wantIds.length}, got ${blocks.length})`
         break
       }
     }
     results.push({
       collection: 'docs',
       expected: docPlans.length,
-      actual: docRows?.length ?? 0,
+      actual: docRows.length,
       pass: docsOk,
       note: docsOk ? 'counts + block id sequences match' : blockMismatch,
     })
@@ -333,23 +319,14 @@ async function verify() {
 
   for (const kind of RECORD_KINDS) {
     const expected = recordPlans.filter((r) => r.kind === kind).length
-    const { count, error } = await supabase
-      .from('console_records')
-      .select('id', { count: 'exact', head: true })
-      .eq('campaign_id', CAMPAIGN_ID)
-      .eq('kind', kind)
-    const pass = !error && count === expected
-    results.push({
-      collection: kind,
-      expected,
-      actual: count ?? 0,
-      pass,
-      note: error ? error.message : pass ? 'count matches' : 'count mismatch',
-    })
+    const [{ count }] = await sql<{ count: number }[]>`select count(*)::int as count from console_records where campaign_id = ${CAMPAIGN} and kind = ${kind}`
+    const pass = count === expected
+    results.push({ collection: kind, expected, actual: count, pass, note: pass ? 'count matches' : 'count mismatch' })
     if (!pass) anyFail = true
   }
 
   console.table(results)
+  await sql.end()
 
   if (anyFail) {
     console.error('\nROUND-TRIP VERIFY FAILED.')

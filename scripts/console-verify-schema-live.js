@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* NOTE (Auth B4): console_* tables are GM-only under RLS, so the anon key used here now reads nothing and this
+   check fails by design. It needs a GM session token instead; not converted yet. */
 /* Step 3, D1: for every live document, run blocksToDoc and validate the result
    against the REAL TipTap/ProseMirror schema (src/console-editor/schema.js),
    via node.check() -- the same call ProseMirror itself uses to reject an

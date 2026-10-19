@@ -38,6 +38,7 @@ export interface TokenGeometryPatch {
 
 /** How long a settled local edit keeps shielding itself from a stale realtime echo. */
 const GEO_ECHO_GRACE_MS = 3000
+const tokenHideTopic = (mapId: string) => `map-token-hide-${mapId}`
 
 const sameGeometry = (t: Pick<MapToken, 'token_w' | 'token_h' | 'token_rot'>, g: TokenGeometryPatch) =>
   (t.token_w ?? null) === g.token_w && (t.token_h ?? null) === g.token_h && (t.token_rot ?? 0) === g.token_rot
@@ -142,7 +143,19 @@ export function useMapTokens(mapId: string | null, options: UseMapTokensOptions 
       )
       .subscribe()
 
-    return () => { supabase.removeChannel(ch) }
+    // RLS (migration 153) hides a token from players the moment it is hidden, so Realtime never delivers that UPDATE
+    // to them: the GM announces it on a broadcast channel instead and visibleOnly callers drop the token.
+    const hideCh = visibleOnly
+      ? supabase
+          .channel(tokenHideTopic(mapId))
+          .on('broadcast', { event: 'token_hidden' }, ({ payload }) => {
+            const id = (payload as { id?: string } | null)?.id
+            if (id) setTokens(prev => prev.filter(t => t.id !== id))
+          })
+          .subscribe()
+      : null
+
+    return () => { supabase.removeChannel(ch); if (hideCh) supabase.removeChannel(hideCh) }
   }, [mapId, visibleOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const moveToken = useCallback(async (id: string, x: number, y: number) => {
@@ -157,7 +170,13 @@ export function useMapTokens(mapId: string | null, options: UseMapTokensOptions 
   const toggleVisibility = useCallback(async (id: string, visible: boolean) => {
     setTokens(prev => prev.map(t => t.id === id ? { ...t, is_visible: visible } : t))
     await supabase.from('map_tokens').update({ is_visible: visible }).eq('id', id)
-  }, [supabase])
+    if (!visible && mapId) {
+      const ch = supabase.channel(tokenHideTopic(mapId))
+      ch.subscribe(status => {
+        if (status === 'SUBSCRIBED') void ch.send({ type: 'broadcast', event: 'token_hidden', payload: { id } }).then(() => supabase.removeChannel(ch))
+      })
+    }
+  }, [supabase, mapId])
 
   const removeToken = useCallback(async (id: string) => {
     let removed: MapToken | undefined

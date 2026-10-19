@@ -17,9 +17,11 @@ require('dotenv').config({ path: path.join(__dirname, '../.env.local') })
 
 const TOKENS_DIR = path.join(__dirname, '../public/tokens')
 
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) { console.error('SUPABASE_SERVICE_ROLE_KEY required in .env.local'); process.exit(2) }
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY, // Auth B4: the tokens bucket and adversary_token_images are GM-only, the anon key is refused
 )
 
 // ── HIGH confidence matches ──────────────────────────────────────────────────
