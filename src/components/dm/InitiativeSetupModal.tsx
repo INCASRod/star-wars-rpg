@@ -1,5 +1,6 @@
 'use client'
 
+import { getAdversarySkillRank } from '@/lib/adversaryAdapter'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
@@ -560,8 +561,9 @@ export function InitiativeSetupModal({
     const def = skillByKey[key]
     const charKey = def?.charKey ?? (key === 'COOL' ? 'presence' : 'willpower')
     const charVal = (a.characteristics[charKey as keyof AdversaryInstance['characteristics']] as number) ?? 0
-    // Adversary skillRanks are keyed by display name, not by ref_skills key.
-    const rank = ((a.skillRanks ?? {}) as Record<string, number>)[def?.name ?? ''] ?? 0
+    // Adversary skillRanks are keyed by display name, not by ref_skills key;
+    // minions derive their rank from live group size.
+    const rank = getAdversarySkillRank(a, def?.name ?? '')
     return { ...buildDicePool(charVal, rank), charVal, rank, charKey, name: def?.name ?? key }
   }, [npcSkillKeyFor, skillByKey])
 

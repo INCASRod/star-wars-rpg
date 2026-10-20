@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { skillKeyForName } from '@/lib/adversaryAdapter'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -165,13 +166,18 @@ function fromTemplate(t: Adversary): Partial<{
     st:          t.strain ?? null,
     defMelee:    Array.isArray(t.defense) ? (t.defense[0] ?? 0) : 0,
     defRanged:   Array.isArray(t.defense) ? (t.defense[1] ?? 0) : 0,
-    skills:      Object.entries(t.skillRanks ?? {}).map(([skill, rank]) => ({
+    skills:      Object.entries(t.skillRanks ?? {}).map(([name, rank]) => {
+      // Template names may be spelled "Ranged: Heavy"; the dropdown only has "Ranged (Heavy)".
+      const key = skillKeyForName(name)
+      const skill = ALL_SKILLS.find(s => skillKeyForName(s) === key) ?? name
+      return {
       skill,
       rank,
       characteristicOverride: skill === 'Lightsaber'
         ? (t.characteristicOverrides?.['Lightsaber'] ?? '')
         : undefined,
-    })),
+      }
+    }),
     weapons:     (t.weapons ?? []).map(w => ({
       name: w.name, skillCategory: w.skillCategory ?? '',
       damage: String(w.damage), range: w.range,

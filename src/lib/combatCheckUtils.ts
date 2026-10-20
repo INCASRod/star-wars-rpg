@@ -7,6 +7,7 @@
 
 import { getSkillPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { AdversaryInstance } from '@/lib/adversaries'
+import { getAdversarySkillRank } from '@/lib/adversaryAdapter'
 
 // ── Range band types ──────────────────────────────────────────────────────────
 
@@ -120,7 +121,6 @@ export function getMeleeDifficulty(
     }
   }
 
-  const ranks = target.skillRanks ?? {}
   // skillRanks stores by display name ("Melee") in adversary data, and it is a
   // SPARSE map — only skills with at least one rank are present.
   //
@@ -133,7 +133,7 @@ export function getMeleeDifficulty(
   // With rank 0 the maths below already produces the correct FFG result:
   // proficiency = min(brawn, 0) = 0, ability = |brawn - 0| = brawn — i.e. an
   // unskilled Brawn 2 defender opposes with 2 difficulty and 0 challenge dice.
-  const meleeRank: number = ranks['Melee'] ?? ranks['MELEE'] ?? 0
+  const meleeRank: number = getAdversarySkillRank(target, 'Melee')
 
   const brawn = target.characteristics?.brawn ?? 2
   const proficiency = Math.min(brawn, meleeRank)

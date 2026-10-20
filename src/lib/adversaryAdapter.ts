@@ -56,6 +56,16 @@ const SKILL_NAME_TO_KEY: Record<string, string> = {
   'Knowledge: Xenology':    'KNOW_XEN',
 }
 
+const normaliseSkillName = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, ' ').trim()
+const NORMALISED_NAME_TO_KEY: Record<string, string> = Object.fromEntries(
+  Object.entries(SKILL_NAME_TO_KEY).map(([name, key]) => [normaliseSkillName(name), key]),
+)
+
+/** Skill key for a display name in any punctuation variant ("Ranged (Light)", "Ranged: Light", "Ranged - Light"), or undefined. */
+export function skillKeyForName(name: string): string | undefined {
+  return NORMALISED_NAME_TO_KEY[normaliseSkillName(name)]
+}
+
 // Reverse map: skill_key → display name (for building skillRanks from CharacterSkill[])
 // Exported — confirmed via direct query that AdversaryInstance.skillRanks is
 // actually keyed in THIS colon-separated format ("Ranged: Heavy": 1), not
@@ -122,8 +132,15 @@ export const SKILL_KEY_TO_CHAR: Record<string, string> = {
  * (src/components/gm/CheckConsole.tsx) so the two paths can't drift.
  */
 export function getAdversarySkillRank(adv: AdversaryInstance, skillName: string): number {
-  if (adv.type !== 'minion') return adv.skillRanks[skillName] ?? 0
-  if (!(skillName in adv.skillRanks)) return 0
+  // Skill names arrive in three spellings ("Ranged (Light)" from the editor,
+  // "Ranged: Light" from adversaries.json, "Ranged - Light" from ref_skills);
+  // compare by skill key, never by raw string.
+  const key = skillKeyForName(skillName)
+  const entry = Object.entries(adv.skillRanks).find(
+    ([name]) => name === skillName || (key !== undefined && skillKeyForName(name) === key),
+  )
+  if (!entry) return 0
+  if (adv.type !== 'minion') return entry[1]
   return Math.max(0, (adv.groupRemaining ?? 1) - 1)
 }
 
@@ -297,7 +314,7 @@ export function adaptAdversaryForCombatCheck(
   const seenKeys = new Set<string>()
 
   for (const [displayName, rank] of Object.entries(adv.skillRanks)) {
-    const skillKey = SKILL_NAME_TO_KEY[displayName]
+    const skillKey = skillKeyForName(displayName)
     if (!skillKey || seenKeys.has(skillKey)) continue
     seenKeys.add(skillKey)
 
