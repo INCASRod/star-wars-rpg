@@ -626,7 +626,7 @@ export function computeEncumbranceStats(
     const label = w.custom_name || ref?.name || w.weapon_key
     let cost = 0
     if (state !== 'stowed') {
-      cost = ref?.encumbrance || 0
+      cost = (ref?.encumbrance || 0) * (w.quantity ?? 1)
       load += cost
       loadSources.push({ id: w.id, label, value: cost, reason: null, suppressed: false, type: 'weapon' })
     }

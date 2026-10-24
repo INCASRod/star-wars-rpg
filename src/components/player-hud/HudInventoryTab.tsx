@@ -22,7 +22,7 @@ interface HudInventoryTabProps {
   effectiveCampaignId:   string | null
   supabase:              SupabaseClient
   onSetEquipState:       (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState, location?: StowLocation | null) => void
-  onRemoveWeapon:        (id: string, mode: 'gm' | 'player', note?: string) => void
+  onRemoveWeapon:        (id: string, mode: 'gm' | 'player', note?: string, count?: number) => void
   onRemoveEquipment:     (id: string, type: 'armor' | 'gear', mode: 'gm' | 'player', note?: string) => void
   // ── Mods (migration 134) ──
   refAttachmentMap?:     Record<string, RefItemAttachment>
@@ -74,10 +74,11 @@ export function HudInventoryTab({
       onSetWeaponState={(id, s, loc) => onSetEquipState(id, 'weapon', s, loc)}
       onSetArmorState={(id, s, loc)  => onSetEquipState(id, 'armor',  s, loc)}
       onSetGearState={(id, s, loc)   => onSetEquipState(id, 'gear',   s, loc)}
-      onDiscardWeapon={(id, note) => {
+      onDiscardWeapon={(id, note, count) => {
         const name = hudWeapons.find(w => w.id === id)?.name ?? 'weapon'
-        onRemoveWeapon(id, isGmMode ? 'gm' : 'player', note)
-        logItemDiscard(isGmMode ? `GM removed "${name}" from ${characterName}` : `${characterName} dropped "${name}"`)
+        onRemoveWeapon(id, isGmMode ? 'gm' : 'player', note, count)
+        const label = count && count > 1 ? `${count}x "${name}"` : `"${name}"`
+        logItemDiscard(isGmMode ? `GM removed ${label} from ${characterName}` : `${characterName} dropped ${label}`)
       }}
       onDiscardArmor={(id, note) => {
         const name = hudArmor.find(a => a.id === id)?.name ?? 'armor'

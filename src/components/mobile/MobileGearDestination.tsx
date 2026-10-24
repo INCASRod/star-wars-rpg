@@ -42,7 +42,7 @@ export interface MobileGearDestinationProps {
   brawn: number
   campaignId: string | null
   onSetEquipState: (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState, location?: StowLocation | null, equipSlot?: EquipSlot | null) => void
-  onDropWeapon: (id: string) => void
+  onDropWeapon: (id: string, count?: number) => void
   onDropEquipment: (id: string, type: 'armor' | 'gear') => void
   // ── Mods / cybernetics (migrations 134, 136) ──
   refAttachmentMap?: Record<string, RefItemAttachment>
@@ -80,7 +80,7 @@ export function MobileGearDestination({
         equipSlot: w.equip_slot ?? null,
         stowLocation: w.equip_state === 'stowed' && w.stow_location_id && w.stow_location_type
           ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type as StowLocationType } : null,
-        qty: 1,
+        qty: w.quantity ?? 1,
         enc: encumbranceStats?.perItem[w.id]?.cost ?? 0,
         baseEnc: ref?.encumbrance ?? 0,
         rarity: ref?.rarity ?? 0, price: ref?.price ?? 0, hardPoints: ref?.hard_points ?? 0,

@@ -198,9 +198,14 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
                 ) : (
                   <>
                     {hudWeapons.map(w => (
-                      <InvRow key={w.id} name={w.name} enc={w.enc} equipState={w.equipState}
+                      <InvRow key={w.id} name={w.qty > 1 ? `${w.name} ×${w.qty}` : w.name} enc={w.enc * w.qty} equipState={w.equipState}
                         onCycle={() => handleToggleEquippedById(w.id, 'weapon')}
-                        onDrop={() => handleRemoveWeapon(w.id)} />
+                        onDrop={() => {
+                          if (w.qty <= 1) { handleRemoveWeapon(w.id); return }
+                          const raw = window.prompt(`Remove how many ${w.name}? (1-${w.qty})`, '1')
+                          const n = Math.floor(Number(raw))
+                          if (raw !== null && n >= 1) handleRemoveWeapon(w.id, 'player', undefined, Math.min(n, w.qty))
+                        }} />
                     ))}
                     {hudArmor.map(a => (
                       <InvRow key={a.id} name={a.name} enc={a.enc} equipState={a.equipState}

@@ -8,6 +8,7 @@ import { useMapTokens }      from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { useSessionMode }    from '@/hooks/useSessionMode'
 import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
+import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip }   from '@/components/player/InitiativeStrip'
 import { FONT_BODY, FS, HUD } from '@/lib/tokens'
 import type { Character }    from '@/lib/types'
@@ -64,7 +65,13 @@ function TableDisplayInner() {
     >
       <title>HOLOCRON // Table Display</title>
 
-      {visibleMap ? (
+      {visibleMap?.map_type === 'crawl' ? (
+        <OpeningCrawlCanvas
+          heading={visibleMap.crawl_content?.heading ?? ''}
+          subheading={visibleMap.crawl_content?.subheading ?? ''}
+          body={visibleMap.crawl_content?.body ?? ''}
+        />
+      ) : visibleMap ? (
         <MapCanvas
           mapImageUrl={visibleMap.image_url}
           tokens={visibleTokens}
@@ -87,7 +94,7 @@ function TableDisplayInner() {
         </div>
       )}
 
-      {visibleMap && (
+      {visibleMap && visibleMap.map_type !== 'crawl' && (
         <div className="absolute flex" style={{ bottom: 'var(--space-2)', right: 'var(--space-2)', gap: 'var(--space-1)', zIndex: 'var(--z-overlay)' }}>
           <button className="map-ctrl-btn" onClick={() => mapHandleRef.current?.resetView()} aria-label="Reset map view" title="Reset map view">↺ Reset</button>
           <button

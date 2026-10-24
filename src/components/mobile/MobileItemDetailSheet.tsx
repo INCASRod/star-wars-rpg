@@ -85,7 +85,7 @@ export interface MobileItemDetailSheetProps {
   encumbranceStats: EncumbranceStats | null
   campaignId: string | null
   onSetEquipState: (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState, location?: StowLocation | null, equipSlot?: EquipSlot | null) => void
-  onDropWeapon: (id: string) => void
+  onDropWeapon: (id: string, count?: number) => void
   onDropEquipment: (id: string, type: 'armor' | 'gear') => void
   // ── Mods / cybernetics (migrations 134, 136) ──
   // Same four RPC wrappers the desktop Mods tab uses. All optional so a caller
@@ -163,9 +163,9 @@ export function MobileItemDetailSheet({
     onSetEquipState(item.id, item.type, 'stowed', location)
   }
 
-  function handleConfirmDrop() {
+  function handleConfirmDrop(count: number) {
     if (!item) return
-    if (item.type === 'weapon') onDropWeapon(item.id)
+    if (item.type === 'weapon') onDropWeapon(item.id, count)
     else onDropEquipment(item.id, item.type)
     onClose()
   }
@@ -367,6 +367,7 @@ export function MobileItemDetailSheet({
         campaignId={campaignId}
         onConfirmStow={handleConfirmStow}
         onConfirmDrop={handleConfirmDrop}
+        partialDrop={item.type === 'weapon'}
       />
     </MobileBottomSheet>
   )

@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 import type { AwardableItem } from '@/components/gm/LootAwardModal'
+import { grantWeapon } from '@/lib/weaponStacking'
 
 export type LootItem = {
   key: string; name: string; type: 'weapon' | 'armor' | 'gear'
@@ -137,7 +138,7 @@ export function useGmLoot(params: {
     setLootBusy(true)
     const notes = `Source: ${lootSource}`
     if (revealItem.type === 'weapon') {
-      await supabase.from('character_weapons').insert({ character_id: assignTarget, weapon_key: revealItem.key, is_equipped: false, attachments: [], notes })
+      await grantWeapon(supabase, { characterId: assignTarget, weaponKey: revealItem.key, notes })
     } else if (revealItem.type === 'armor') {
       await supabase.from('character_armor').insert({ character_id: assignTarget, armor_key: revealItem.key, is_equipped: false, attachments: [], notes })
     } else {

@@ -1708,6 +1708,17 @@
 .m-stow-confirm-row {
   margin-top: var(--space-2);
 }
+.m-stow-qty-input {
+  margin-top: var(--space-2);
+  width: 100%;
+  min-height: 48px;
+  background: var(--hud-surface-lo);
+  border: 1px solid var(--hud-mobile-border);
+  color: var(--hud-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  padding: 0 var(--space-3);
+}
 .m-state-btn {
   flex: 1;
   min-height: 48px;

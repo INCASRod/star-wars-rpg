@@ -633,6 +633,8 @@ export interface CharacterWeapon {
   equip_state: EquipState
   equip_slot?: EquipSlot | null   // body anchor when equipped — separate from stow_location_*
   attachments: unknown[]
+  /** Stack size; > 1 only for stackable weapons (grenades). Absent/1 = a single weapon. */
+  quantity?: number
   notes?: string
   condition?:      string | null
   item_image_url?: string | null
@@ -772,6 +774,8 @@ export interface HudTalent {
 export interface WpnDisplay {
   id:            string
   name:          string
+  /** Stack size (grenades); 1 for every other weapon. */
+  qty:           number
   damage:        { baseDamage: number; isMelee: boolean; brawn: number }
   crit:          number
   range:         string

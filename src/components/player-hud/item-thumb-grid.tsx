@@ -346,7 +346,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ padding: SP[1] }}>
             {showWeapons.map(w => (
               <ManifestRow
-                key={w.id} id={w.id} name={w.name} table="weapon" iconUrl={w.iconUrl}
+                key={w.id} id={w.id} name={w.qty > 1 ? `${w.name} ×${w.qty}` : w.name} table="weapon" iconUrl={w.iconUrl}
                 equipState={w.equipState} condition={w.condition} category={w.categories?.[0]}
                 isSelected={selectedId === w.id}
                 onClick={() => onSelect(w.id)}

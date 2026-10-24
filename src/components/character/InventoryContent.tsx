@@ -42,7 +42,7 @@ export function InventoryContent({
   const weaponEnc = weapons.reduce((sum, w) => {
     if (!w.is_equipped) return sum
     const ref = w.weapon_key ? refWeaponMap[w.weapon_key] : null
-    return sum + (ref?.encumbrance || 0)
+    return sum + (ref?.encumbrance || 0) * (w.quantity ?? 1)
   }, 0)
 
   const armorEnc = armor.reduce((sum, a) => {

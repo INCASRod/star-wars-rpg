@@ -217,7 +217,7 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
                 brawn={character.brawn}
                 campaignId={effectiveCampaignId}
                 onSetEquipState={handleSetEquipState}
-                onDropWeapon={id => void handleRemoveWeapon(id)}
+                onDropWeapon={(id, count) => void handleRemoveWeapon(id, 'player', undefined, count)}
                 onDropEquipment={(id, type) => void handleRemoveEquipment(id, type)}
                 refAttachmentMap={refAttachmentMap}
                 refDescriptorMap={refDescriptorMap}

@@ -33,7 +33,7 @@ interface ItemDetailPanelProps {
   onSetWeaponState?:     (id: string, state: EquipState, location?: StowLocation | null) => void
   onSetArmorState?:      (id: string, state: EquipState, location?: StowLocation | null) => void
   onSetGearState?:       (id: string, state: EquipState, location?: StowLocation | null) => void
-  onDiscardWeapon?:      (id: string, note?: string) => void
+  onDiscardWeapon?:      (id: string, note?: string, count?: number) => void
   onDiscardArmor?:       (id: string, note?: string) => void
   onDiscardGear?:        (id: string, note?: string) => void
   isGmMode?:             boolean
@@ -546,10 +546,11 @@ function EquipButtons({ itemId, itemType, equipState, condition, stowLocation, s
 
 // ── Discard ──────────────────────────────────────────────────────────────────
 
-function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
-  isGm: boolean; characterName?: string; onCancel: () => void; onConfirm: (note?: string) => void
+function DiscardStrip({ isGm, characterName, qty = 1, onCancel, onConfirm }: {
+  isGm: boolean; characterName?: string; qty?: number; onCancel: () => void; onConfirm: (note?: string, count?: number) => void
 }) {
   const [note, setNote] = useState('')
+  const [count, setCount] = useState(1)
   const accent = isGm ? 'var(--hud-gold)' : 'var(--hud-vital-wounds)'
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: SP[2], flex: 1 }}>
@@ -557,6 +558,20 @@ function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
         <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, color: accent, fontWeight: 600 }}>
           {isGm ? `Remove from ${characterName ?? 'character'}?` : 'Drop this item?'}
         </div>
+        {qty > 1 && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginTop: SP[1], fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)' }}>
+            How many? (of {qty})
+            <input
+              type="number" min={1} max={qty} value={count}
+              onChange={e => setCount(Math.min(qty, Math.max(1, parseInt(e.target.value) || 1)))}
+              style={{
+                width: '3.5rem', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)',
+                color: 'var(--hud-text)', fontFamily: FONT_BODY, fontSize: FS.overline,
+                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, outline: 'none',
+              }}
+            />
+          </label>
+        )}
         {isGm && (
           <input
             type="text" value={note} onChange={e => setNote(e.target.value)}
@@ -580,7 +595,7 @@ function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
         }}
       >Cancel</button>
       <button
-        onClick={() => onConfirm(isGm && note.trim() ? note.trim() : undefined)}
+        onClick={() => onConfirm(isGm && note.trim() ? note.trim() : undefined, qty > 1 ? count : undefined)}
         style={{
           height: '1.625rem', padding: `0 ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
@@ -713,11 +728,12 @@ export function ItemDetailPanel({
   // State control + Discard — pinned outside the scroll region (flexShrink:0
   // sibling in the root return) so it's reachable regardless of how tall the
   // scrollable content above it is.
-  function Footer({ equipState, condition, stowLocation, name, itemId, itemType, onSet, onDiscard }: {
+  function Footer({ equipState, condition, stowLocation, name, itemId, itemType, qty, onSet, onDiscard }: {
     equipState: EquipState; condition: ItemCondition; stowLocation?: StowLocation | null; name: string; itemId: string
     itemType: 'weapon' | 'armor' | 'gear'
+    qty?: number
     onSet: (state: EquipState, location?: StowLocation | null) => void
-    onDiscard?: (id: string, note?: string) => void
+    onDiscard?: (id: string, note?: string, count?: number) => void
   }) {
     return (
       <div style={{
@@ -726,9 +742,9 @@ export function ItemDetailPanel({
       }}>
         {showDiscard ? (
           <DiscardStrip
-            isGm={!!isGmMode} characterName={characterName}
+            isGm={!!isGmMode} characterName={characterName} qty={qty}
             onCancel={() => setShowDiscard(false)}
-            onConfirm={note => { setShowDiscard(false); onDiscard?.(itemId, note) }}
+            onConfirm={(note, count) => { setShowDiscard(false); onDiscard?.(itemId, note, count) }}
           />
         ) : (
           <>
@@ -769,6 +785,7 @@ export function ItemDetailPanel({
             <StatBox label="SKILL" value={w.skillName}  color="var(--die-force)" />
             <StatBox label="ENC"   value={w.enc}        color="var(--hud-text-dim)" />
             <StatBox label="HP"    value={w.hardPoints} color="var(--hud-accent-purple)" />
+            {w.qty > 1 && <StatBox label="QTY" value={w.qty} color="var(--hud-gold)" />}
             {w.qualities.length > 0 && (
               <ItemQualityList qualities={w.qualities} refWeaponQualityMap={refWeaponQualityMap} />
             )}
@@ -823,7 +840,7 @@ export function ItemDetailPanel({
   function renderFooter(): React.ReactNode {
     if (selected.kind === 'weapon') {
       const w = selected.item
-      return <Footer equipState={w.equipState} condition={w.condition} stowLocation={w.stowLocation} name={w.name} itemId={w.id} itemType="weapon" onSet={(s, loc) => onSetWeaponState?.(w.id, s, loc)} onDiscard={onDiscardWeapon} />
+      return <Footer equipState={w.equipState} condition={w.condition} stowLocation={w.stowLocation} name={w.name} itemId={w.id} itemType="weapon" qty={w.qty} onSet={(s, loc) => onSetWeaponState?.(w.id, s, loc)} onDiscard={onDiscardWeapon} />
     }
     if (selected.kind === 'armor') {
       const a = selected.item

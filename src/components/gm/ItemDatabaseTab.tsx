@@ -14,6 +14,7 @@ import { NumberField } from '@/components/ui/NumberField'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 import { useItemIconContext } from '@/hooks/useItemIconContext'
 import { ItemDetailPopup } from '@/components/shared/ItemDetailPopup'
+import { grantWeapon } from '@/lib/weaponStacking'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -350,10 +351,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
       for (const charId of charIds) {
         const equip = equipChoices[charId] ?? 'carrying'
         if (d.itemType === 'weapon') {
-          await supabase.from('character_weapons').insert({
-            character_id: charId, weapon_key: d.itemKey,
-            is_equipped: false, equip_state: equip, attachments: [], notes: 'Awarded from dropped items',
-          })
+          await grantWeapon(supabase, { characterId: charId, weaponKey: d.itemKey, equipState: equip, notes: 'Awarded from dropped items' })
         } else if (d.itemType === 'armor') {
           await supabase.from('character_armor').insert({
             character_id: charId, armor_key: d.itemKey,

@@ -28,7 +28,7 @@ interface InventoryCardPanelProps {
   onSetWeaponState:      (id: string, state: EquipState, location?: StowLocation | null) => void
   onSetArmorState:       (id: string, state: EquipState, location?: StowLocation | null) => void
   onSetGearState:        (id: string, state: EquipState, location?: StowLocation | null) => void
-  onDiscardWeapon?:      (id: string, note?: string) => void
+  onDiscardWeapon?:      (id: string, note?: string, count?: number) => void
   onDiscardArmor?:       (id: string, note?: string) => void
   onDiscardGear?:        (id: string, note?: string) => void
   isGmMode?:             boolean

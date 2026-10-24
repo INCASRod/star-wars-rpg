@@ -8,6 +8,7 @@ import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { FONT_BODY, FS, RADIUS, Z, COLOR } from '@/lib/tokens'
 import type { Character, RefWeaponQuality } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { grantWeapon } from '@/lib/weaponStacking'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,17 +89,8 @@ export function VendorPurchaseDialog({
 
     // Add item(s) to inventory
     if (item.type === 'weapon') {
-      // Each weapon is its own row — insert one per quantity
-      await supabase.from('character_weapons').insert(
-        Array.from({ length: quantity }, () => ({
-          character_id: character.id,
-          weapon_key:   item.key,
-          is_equipped:  false,
-          equip_state:  'carrying',
-          attachments:  [],
-          notes:        'Purchased from vendor',
-        }))
-      )
+      // Grenades stack onto one row; other weapons get one row per unit
+      await grantWeapon(supabase, { characterId: character.id, weaponKey: item.key, quantity, notes: 'Purchased from vendor' })
     } else if (item.type === 'armor') {
       await supabase.from('character_armor').insert(
         Array.from({ length: quantity }, () => ({

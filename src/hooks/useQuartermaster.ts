@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Quartermaster, QuartermasterItem, QmBuyRow, WeaponQuality } from '@/lib/types'
+import { grantWeapon } from '@/lib/weaponStacking'
 
 // upsertItem's write is guarded on the caller's last-seen stock value (the
 // row is the unit of concurrency — see useQuartermaster.ts's upsertItem doc
@@ -282,10 +283,7 @@ export function useQuartermaster(
     if (!decremented || decremented.length === 0) throw new Error('Out of stock')
 
     if (itemType === 'weapon') {
-      await supabase.from('character_weapons').insert({
-        character_id: characterId, weapon_key: itemKey,
-        is_equipped: false, equip_state: 'carrying', attachments: [], notes: 'Purchased from Quartermaster',
-      })
+      await grantWeapon(supabase, { characterId, weaponKey: itemKey, notes: 'Purchased from Quartermaster' })
     } else if (itemType === 'armor') {
       await supabase.from('character_armor').insert({
         character_id: characterId, armor_key: itemKey,

@@ -11,6 +11,7 @@ import { HUD, FONT_BODY, FONT_MONO, RADIUS, EASE, FS } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 import { useItemIconContext } from '@/hooks/useItemIconContext'
+import { grantWeapon, isStackableWeapon } from '@/lib/weaponStacking'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 // Pre-approved exceptions kept:
@@ -73,6 +74,7 @@ export function LootAwardModal({
   const [selected,     setSelected]     = useState<Set<string>>(preSelectedCharId ? new Set([preSelectedCharId]) : new Set())
   const [equipChoices, setEquipChoices] = useState<Record<string, EquipChoice>>({})
   const [quantity,     setQuantity]     = useState(1)
+  const stackable = item.type === 'weapon' && isStackableWeapon(item.categories)
   const [busy,         setBusy]         = useState(false)
   const [loadingInv,   setLoadingInv]   = useState(true)
 
@@ -146,7 +148,7 @@ export function LootAwardModal({
       const stats = computeEncumbranceStats(
         c, inv.armor, refArmorMap, inv.gear, refGearMap, inv.weapons, refWeaponMap,
       )
-      const addedEnc = item.encumbrance * (item.type === 'gear' ? quantity : 1)
+      const addedEnc = item.encumbrance * (item.type === 'gear' || stackable ? quantity : 1)
       map[c.id] = { current: stats.load, threshold: stats.threshold, afterCurrent: stats.load + addedEnc }
     }
     return map
@@ -178,10 +180,7 @@ export function LootAwardModal({
       const isEquipped = equip === 'carrying'
 
       if (item.type === 'weapon') {
-        await supabase.from('character_weapons').insert({
-          character_id: charId, weapon_key: item.key,
-          is_equipped: false, equip_state: equip, attachments: [], notes: 'Awarded by GM',
-        })
+        await grantWeapon(supabase, { characterId: charId, weaponKey: item.key, quantity, equipState: equip, notes: 'Awarded by GM' })
       } else if (item.type === 'armor') {
         await supabase.from('character_armor').insert({
           character_id: charId, armor_key: item.key,
@@ -260,8 +259,8 @@ export function LootAwardModal({
           >✕</button>
         </div>
 
-        {/* Quantity (gear only, not when quantity is fixed) */}
-        {item.type === 'gear' && !fixedQuantity && (
+        {/* Quantity (gear and stackable weapons, not when quantity is fixed) */}
+        {(item.type === 'gear' || stackable) && !fixedQuantity && (
           <div style={{ marginBottom: '1rem' }}>
             <div style={fieldLabel}>Quantity</div>
             <NumberField

@@ -1046,8 +1046,15 @@ export function useCharacterData(characterId: string) {
     await supabase.from('characters').update({ [dbField]: val }).eq('id', character.id)
   }
 
-  const handleRemoveWeapon = async (id: string, droppedBy: 'player' | 'gm' = 'player', droppedNote?: string) => {
+  /** `count` removes part of a stack; omitted (or >= the stack) drops the whole row. */
+  const handleRemoveWeapon = async (id: string, droppedBy: 'player' | 'gm' = 'player', droppedNote?: string, count?: number) => {
     markSelf()
+    const have = weapons.find(w => w.id === id)?.quantity ?? 1
+    if (count !== undefined && count >= 1 && count < have) {
+      setWeapons(prev => prev.map(w => w.id === id ? { ...w, quantity: have - count } : w))
+      await supabase.from('character_weapons').update({ quantity: have - count }).eq('id', id)
+      return
+    }
     setWeapons(prev => prev.filter(w => w.id !== id))
     await supabase.from('character_weapons').update({
       is_dropped: true,
@@ -1370,6 +1377,7 @@ export function useCharacterData(characterId: string) {
       return {
         id:          w.id,
         name:        w.custom_name || ref?.name || w.weapon_key || 'Unknown',
+        qty:         w.quantity ?? 1,
         damage:      { baseDamage, isMelee: hasBrawnScale, brawn: hasBrawnScale ? (character?.brawn ?? 0) : 0 },
         crit:        ref?.crit || 0,
         range:       ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
