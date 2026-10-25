@@ -59,7 +59,7 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
     refTalentMap, refArmorMap, refGearMap, refWeaponMap, refWeaponQualityMap, refAttachmentMap,
     refDescriptorMap, refCyberneticEffects, skillRankMap,
     installMod, uninstallMod, installCybernetic, uninstallCybernetic,
-    forceRating, careerForceRatingBase,
+    forceRating, forceRatingBase, careerForceRatingBase,
     refCareers, refSpeciesAll, charSpecs, refSpecMap,
     hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap,
@@ -79,7 +79,7 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
 
   const derivedStats = useDerivedStats({
     character: character ?? null,
-    forceRatingBase: forceRating,
+    forceRatingBase,
     careerForceRatingBase,
     talents,
     refTalentMap,

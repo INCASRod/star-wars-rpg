@@ -1214,9 +1214,9 @@ export function useCharacterData(characterId: string) {
   }, [refSpeciesAll, character?.species_key])
 
   // ── Fully-engine-adjusted force rating (career/talent/purchase base + talent
-  // modifier bonuses, e.g. WITCHCRAFT's conditional bonus) — used only to keep
-  // the characters.force_rating cache column in sync (see write-back effect
-  // below). Reuses computeDerivedStats rather than re-deriving the same logic.
+  // modifier bonuses, e.g. WITCHCRAFT's conditional bonus). Returned as `forceRating`
+  // and written to the characters.force_rating cache column (see write-back
+  // effect below). Reuses computeDerivedStats rather than re-deriving the same logic.
   const derivedForceRating = useMemo(() => {
     if (!character) return forceRating
     return computeDerivedStats(
@@ -1510,7 +1510,10 @@ export function useCharacterData(characterId: string) {
     // Derived
     cybernetics,
     skillRankMap,
-    forceRating,
+    // Full Force Rating (career + Force Rating talents + purchase + conditional talents such as
+    // Witchcraft). forceRatingBase excludes the talent-modifier layer: it is the engine's INPUT.
+    forceRating: derivedForceRating,
+    forceRatingBase: forceRating,
     careerForceRatingBase,
     careerSpecKeys,
     specKeyToCareerName,

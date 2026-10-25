@@ -82,7 +82,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap, refDescriptorMap, refCyberneticEffects, skillRankMap,
     installMod, uninstallMod, installCybernetic, uninstallCybernetic,
-    forceRating, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
+    forceRating, forceRatingBase, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceThreshold, encumbranceStats,
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
@@ -95,7 +95,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Derived stats engine ──
   const derivedStats = useDerivedStats({
     character: character ?? null,
-    forceRatingBase: forceRating,
+    forceRatingBase,
     careerForceRatingBase,
     talents,
     refTalentMap,
