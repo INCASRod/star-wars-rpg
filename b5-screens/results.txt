@@ -1,0 +1,15 @@
+signedout /: /login
+signedout /character/eac7271c-123c-4a27-9e08-7aa8697860a5: /login
+signedout /create: /login
+signedout /gm: /login
+signedout /wireframe: /login
+signedout /table: /table
+signedout /invite: /invite/doesnotexist
+player after login: /
+landing cards: 8
+landing delete btn: 0
+create btn: 0
+player own: /character/add2e364-40c4-45ac-a942-4c54f7c428d1
+player other(preview): /character/eac7271c-123c-4a27-9e08-7aa8697860a5
+mobile own: /character/add2e364-40c4-45ac-a942-4c54f7c428d1
+player console errors: ["Failed to load resource: the server responded with a status of 406 ()"]

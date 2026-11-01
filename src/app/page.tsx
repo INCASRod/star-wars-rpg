@@ -11,6 +11,7 @@ import { useCharacterSelectStore } from '@/store/characterSelectStore'
 import { TransitionCard } from '@/components/ui/TransitionCard'
 import { prefetchCharacterData } from '@/lib/characterDataPrefetch'
 import { AuthStatus } from '@/components/auth/AuthStatus'
+import { useIsGm } from '@/hooks/useIsGm'
 import type { User } from '@supabase/supabase-js'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
@@ -71,6 +72,8 @@ interface CharacterCardProps {
   online:          boolean
   animDelay:       number
   onSelect:        (rect: DOMRect) => void
+  /** GM only: delete/archive is a GM action (characters DELETE policy, migration 157). */
+  canDelete?:      boolean
   onDelete:        () => void
   hyperTransform?: string
   hyperOpacity?:   number
@@ -78,7 +81,7 @@ interface CharacterCardProps {
 
 function CharacterCard({
   char, state, online, isYou, isPreview,
-  animDelay, onSelect, onDelete,
+  animDelay, onSelect, onDelete, canDelete,
   hyperTransform, hyperOpacity,
 }: CharacterCardProps) {
   const [hovered, setHovered] = useState(false)
@@ -174,7 +177,7 @@ function CharacterCard({
       }} />
 
       {/* Delete button — unchanged */}
-      {hovered && (
+      {hovered && canDelete && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete() }}
           style={{
@@ -575,6 +578,7 @@ const LOADING_TEXTS = [
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const router = useRouter()
+  const isGm = useIsGm() === true
 
   const [characters, setCharacters] = useState<Character[]>([])
   const [sessions, setSessions] = useState<CharacterSession[]>([])
@@ -1079,6 +1083,7 @@ export default function Home() {
                 online={online}
                 animDelay={0.15 + index * 0.08}
                 onSelect={(rect) => handleCardSelect(char.id, rect)}
+                canDelete={isGm}
                 onDelete={() => void deleteCharacter(char.id, char.name)}
                 hyperTransform={hyperTransform}
                 hyperOpacity={hyperOpacity}
@@ -1099,8 +1104,8 @@ export default function Home() {
           flexShrink: 0,
           animation: 'fadeUp 0.4s 0.15s ease both',
         }}>
-          {/* Create New Character */}
-          <button
+          {/* Create New Character (GM only: characters are created for a player row, then bound by invite) */}
+          {isGm && <button
             onClick={() => router.push(`/create?campaign=${campaignId}`)}
             className="hov-lift"
             style={{
@@ -1120,7 +1125,7 @@ export default function Home() {
             }}
           >
             + Create New Character
-          </button>
+          </button>}
 
           {/* GM Access — signs in (or straight through) to /gm */}
           <button
