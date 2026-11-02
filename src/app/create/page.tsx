@@ -491,8 +491,6 @@ function CreateWizard() {
           credits: startingCredits,
           encumbrance_threshold: 5 + draft.brawn,
           morality_value: 50,
-          backstory: draft.backstory || '',
-          notes: '',
           // Obligation
           obligation_type: draft.obligationType || null,
           obligation_value: totalObligation,
@@ -508,11 +506,18 @@ function CreateWizard() {
           // Motivation
           motivation_type: draft.motivationType || null,
           motivation_specific: draft.motivationSpecific || null,
-          motivation_description: draft.motivationDesc || null,
           motivation_configured: !!draft.motivationType,
         })
         .select('id').single()
       if (charErr) throw charErr
+
+      // Private text lives in character_private (migration 158).
+      await supabase.from('character_private').insert({
+        character_id: char.id,
+        backstory: draft.backstory || '',
+        notes: '',
+        motivation_description: draft.motivationDesc || null,
+      })
 
       // All specs
       const specInserts = allSpecs.map((spec, idx) => ({

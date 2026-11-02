@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export interface GroupStorageItem {
@@ -33,32 +33,22 @@ export function useGroupStorage(assetId: string | null) {
   const [loading, setLoading] = useState(false)
   const [taking,  setTaking]  = useState<Set<string>>(new Set())
 
+  const loadedRef = useRef(false)
+
   const fetchItems = useCallback(async () => {
     if (!assetId) { setItems([]); return }
-    setLoading(true)
+    // Spinner on the first load only: the 10s poll and realtime refetches must not flash it.
+    if (!loadedRef.current) setLoading(true)
     const supabase = createClient()
 
     try {
-      const [wpnRes, armRes, gearRes] = await Promise.all([
-        supabase
-          .from('character_weapons')
-          .select('id, character_id, weapon_key, custom_name')
-          .eq('stow_location_id', assetId)
-          .eq('equip_state', 'stowed')
-          .not('is_dropped', 'eq', true),
-        supabase
-          .from('character_armor')
-          .select('id, character_id, armor_key, custom_name')
-          .eq('stow_location_id', assetId)
-          .eq('equip_state', 'stowed')
-          .not('is_dropped', 'eq', true),
-        supabase
-          .from('character_gear')
-          .select('id, character_id, gear_key, quantity, custom_name')
-          .eq('stow_location_id', assetId)
-          .eq('equip_state', 'stowed')
-          .not('is_dropped', 'eq', true),
-      ])
+      // Other players' inventory rows are private (migration 158), so the stowed list comes from a DEFINER function
+      // that returns only what this sheet shows.
+      const { data: stored, error: storedErr } = await supabase.rpc('group_storage_rows', { p_asset_id: assetId })
+      if (storedErr) console.error('[GroupStorage] group_storage_rows failed:', storedErr.message)
+      const wpnRes  = { data: (stored?.weapons ?? []) as any[] }
+      const armRes  = { data: (stored?.armor ?? []) as any[] }
+      const gearRes = { data: (stored?.gear ?? []) as any[] }
 
       const weaponRows = wpnRes.data  ?? []
       const armorRows  = armRes.data  ?? []
@@ -143,12 +133,14 @@ export function useGroupStorage(assetId: string | null) {
       ]
 
       setItems(assembled)
+      loadedRef.current = true
     } finally {
       setLoading(false)
     }
   }, [assetId])
 
   useEffect(() => {
+    loadedRef.current = false
     fetchItems()
     if (!assetId) return
 
@@ -160,7 +152,10 @@ export function useGroupStorage(assetId: string | null) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_gear'    }, fetchItems)
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    // Realtime only reaches owners and the GM now; a short poll keeps every member's list current.
+    const poll = setInterval(fetchItems, 10_000)
+
+    return () => { clearInterval(poll); supabase.removeChannel(channel) }
   }, [assetId, fetchItems])
 
   const takeItem = useCallback(async (

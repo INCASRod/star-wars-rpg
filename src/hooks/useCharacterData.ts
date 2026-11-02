@@ -1160,14 +1160,14 @@ export function useCharacterData(characterId: string) {
     if (!character) return
     markSelf()
     setCharacter({ ...character, backstory: newBackstory })
-    await supabase.from('characters').update({ backstory: newBackstory }).eq('id', character.id)
+    await supabase.from('character_private').upsert({ character_id: character.id, backstory: newBackstory, updated_at: new Date().toISOString() })
   }
 
   const handleNotesChange = async (newNotes: string) => {
     if (!character) return
     markSelf()
     setCharacter({ ...character, notes: newNotes })
-    await supabase.from('characters').update({ notes: newNotes }).eq('id', character.id)
+    await supabase.from('character_private').upsert({ character_id: character.id, notes: newNotes, updated_at: new Date().toISOString() })
   }
 
   const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {

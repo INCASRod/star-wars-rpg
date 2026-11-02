@@ -50,7 +50,7 @@ async function fetchCharacterDataBatch(characterId: string) {
   const [refData, [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
     refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
     refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes]] = await Promise.all([
+    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes, privateRes]] = await Promise.all([
     getRefData(ds),
     Promise.all([
       supabase.from('characters').select('*').eq('id', characterId).single(),
@@ -84,8 +84,13 @@ async function fetchCharacterDataBatch(characterId: string) {
       // Cybernetic implant effects (migration 135). Global reference data,
       // unfiltered like the other ref_* tables — 47 rows.
       supabase.from('ref_cybernetic_effects').select('*'),
+      // Private text (notes, backstory, motivation description), migration 158: owner + GM can read it, anyone
+      // else gets no row. Merged into the character below so every consumer still sees `character.backstory`.
+      supabase.from('character_private').select('notes, backstory, motivation_description').eq('character_id', characterId).maybeSingle(),
     ]),
   ])
+
+  if (charRes.data && privateRes.data) Object.assign(charRes.data, privateRes.data)
 
   return {
     ds, refData,
