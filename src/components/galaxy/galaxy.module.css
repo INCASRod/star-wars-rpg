@@ -189,6 +189,8 @@
 /* ── map ── */
 .map {
   position: relative; overflow: hidden; cursor: grab; touch-action: none;
+  /* Pan starts on press but only commits after CLICK_SLOP; without this the browser begins a text selection in that gap. */
+  user-select: none; -webkit-user-select: none;
   background:
     radial-gradient(ellipse at 50% 48%, color-mix(in srgb, var(--hud-accent-hi) 10%, transparent), transparent 38%),
     radial-gradient(ellipse at 52% 50%, color-mix(in srgb, var(--hud-accent) 6%, transparent), transparent 65%),
@@ -301,7 +303,7 @@
 .stops li:last-child::before { bottom: 50%; }
 .stops li::after {
   content: ''; position: absolute; left: 3px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%;
-  background: var(--hud-panel); border: 2px solid var(--c2, var(--hud-text-dim));
+  background: var(--hud-panel); border: 2px solid var(--hud-text-dim);
 }
 .stops .rt { display: block; color: var(--hud-text-faint); font-size: var(--text-overline); }
 .stops .end { color: var(--hud-text); font-weight: 700; }

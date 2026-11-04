@@ -487,6 +487,9 @@ export function EncounterDeck({
               style={{
                 display: 'flex', flexWrap: 'nowrap', gap: SP[3],
                 height: '100%', cursor: 'grab',
+                // Drag-to-scroll rail: stop the browser starting a text selection
+                // on press, which otherwise hijacks the drag after a few px.
+                userSelect: 'none',
                 // Explicit per-side padding (not shorthand `padding` + a longhand
                 // override — React warns when both are set on the same element,
                 // since the shorthand silently sets paddingRight too and the two
