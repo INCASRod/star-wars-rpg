@@ -225,6 +225,7 @@ import { Z } from '@/lib/tokens'
 // Z.toast=9500   (above GM chrome: toasts must never clip under the GM top bar)
 // Z.ceremony=9998  Z.tooltip=9999  Z.hudSupreme=9999
 ```
+A numeric `zIndex` in TSX raises the `holocron/no-numeric-zindex` ESLint warning (eslint.config.mjs). The hard stop is `npm run check:z` (raw z-index count ratchet, `RAW_Z_BASELINE` in `scripts/check-z.ts`, may only go down).
 
 ### Border radius
 
