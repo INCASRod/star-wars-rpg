@@ -398,7 +398,7 @@
    outside layout flow, so sibling grid cells never move. ─────────────── */
 .plaque:hover {
   transform: scale(1.05);
-  z-index: var(--z-raised);
+  z-index: var(--z-sticky);
   bottom: auto;
   min-height: 100%;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--hud-bg) 80%, transparent), 0 0 0 1px var(--plaque-edge-owned);
@@ -412,7 +412,7 @@
    cell's z-index is set inline in TalentTree.tsx (higher specificity than
    a plain class rule) and this is the one deliberate override of it. */
 .cell:has(.plaque:hover) {
-  z-index: var(--z-raised) !important;
+  z-index: var(--z-sticky) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -213,12 +213,14 @@ Do not use `onMouseEnter`/`onMouseLeave` to mutate `e.currentTarget.style.*`. Us
 
 ### Z-index
 
-All z-index values must use `Z` from tokens:
+All z-index values must use `Z` from tokens. `Z` in `tokens.ts` is the only source; the `--z-*` CSS variables are generated from it into `src/styles/z-tokens.css` (never hand-edit that file; `npm run gen:z` regenerates it, `npm run check:z` verifies it and ratchets raw z-index numbers down):
 ```ts
 import { Z } from '@/lib/tokens'
-// Z.base=0  Z.raised=1  Z.sticky=10  Z.dropdown=20
-// Z.overlay=100  Z.backdrop=400  Z.modal=410
-// Z.fab=500  Z.toast=800  Z.tooltip=9999
+// Z.base=0  Z.raised=1  Z.sticky=10  Z.dropdown=20  Z.drawer=30
+// Z.overlay=100  Z.backdrop=400  Z.modal=410  Z.popover=420
+// Z.fab=500  Z.deck=520  Z.deckExpanded=530  Z.dossier=540
+// Z.toast=800  Z.dialog=820  Z.tooltip=9999
+// Z.hudDrawer=8999  Z.hudOverlay=9000  Z.hudCombat=9001  Z.hudSupreme=9999
 ```
 
 ### Border radius

@@ -102,6 +102,7 @@ export const Z = {
   raised:     1,
   sticky:     10,
   dropdown:   20,
+  drawer:     30,
   overlay:    100,
   backdrop:   400,
   modal:      410,

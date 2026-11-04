@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import '../styles/holo-tokens.css';
+@import '../styles/z-tokens.css';
 @import '../styles/state-tokens.css';
 @import '../styles/animations.css';
 @import '../styles/mobile-shell.css';
@@ -3609,7 +3610,7 @@ i.ffi {
   flex: none;
   position: sticky;
   top: 0;
-  z-index: var(--z-raised);
+  z-index: var(--z-sticky);
   border: 1px solid var(--check-accent, var(--hud-accent));
   border-radius: 6px;
   padding: var(--space-2) var(--space-3);

@@ -138,7 +138,7 @@ export function HudModalsOverlay({
           onClick={() => setGmCritInjuryDialog(null)}
           className="fixed inset-0 flex items-center justify-center"
           style={{
-            zIndex: 'var(--z-toast)',
+            zIndex: 'var(--z-modal)',
             background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)',
             padding: 'var(--space-6)',
           }}

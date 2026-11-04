@@ -134,7 +134,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
   return createPortal(
     <div
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-toast)' as unknown as number, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       <div
         onClick={e => e.stopPropagation()}

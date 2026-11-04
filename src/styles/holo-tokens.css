@@ -94,23 +94,8 @@ html {
   --ease-smooth:  300ms ease;
 
   /* ── Z-index scale ──────────────────────────────────────────── */
-  /* Use var(--z-*) in CSS; use Z.* from @/lib/tokens in TypeScript. */
-  --z-base:        0;
-  --z-raised:      10;
-  --z-sticky:      10;   /* = Z.sticky in tokens.ts */
-  --z-drawer:      30;
-  --z-overlay:     100;
-  --z-panel:       100;
-  --z-fab:         190;
-  --z-modal:       200;
-  --z-toast:       410;
-  --z-popover:     500;
-  --z-dialog:      900;
-  --z-tooltip:     9999;
-  --z-hud-drawer:  8999;
-  --z-hud-overlay: 9000;
-  --z-hud-combat:  9001;
-  --z-hud-supreme: 9999;
+  /* GENERATED: the --z-* variables live in z-tokens.css, built from Z in */
+  /* src/lib/tokens.ts. Do not define --z-* here. */
 
   /* ── Container Widths ───────────────────────────────────────── */
   --container-sm:   40rem;

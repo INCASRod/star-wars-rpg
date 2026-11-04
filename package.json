@@ -1,15 +1,17 @@
 {
   "name": "holocron",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "private": true,
   "scripts": {
-    "predev": "node scripts/build-console-editor.js",
+    "predev": "node scripts/build-console-editor.js && tsx scripts/gen-z-tokens.ts",
     "dev": "next dev",
-    "prebuild": "node scripts/build-console-editor.js",
+    "prebuild": "node scripts/build-console-editor.js && tsx scripts/gen-z-tokens.ts && tsx scripts/check-z.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:console-editor": "node scripts/build-console-editor.js"
+    "build:console-editor": "node scripts/build-console-editor.js",
+    "gen:z": "tsx scripts/gen-z-tokens.ts",
+    "check:z": "tsx scripts/check-z.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
