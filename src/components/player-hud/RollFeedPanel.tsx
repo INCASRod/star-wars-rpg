@@ -345,7 +345,7 @@ function CombatCard({
             {meta?.critEligible && (
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)',
-                padding: '2px var(--space-1-5, 0.375rem)', borderRadius: RADIUS.sm, marginBottom: 3,
+                padding: '2px 0.375rem', borderRadius: RADIUS.sm, marginBottom: 3,
                 background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                 fontFamily: FONT_BODY, fontSize: FS.overline,
                 color: HUD.gold, fontWeight: 700, letterSpacing: '0.05em',

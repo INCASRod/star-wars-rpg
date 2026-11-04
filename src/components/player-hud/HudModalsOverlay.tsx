@@ -312,7 +312,7 @@ export function HudModalsOverlay({
         const label = rarity <= 2 ? 'Common' : rarity <= 4 ? 'Uncommon' : rarity <= 6 ? 'Rare' : rarity <= 8 ? 'Epic' : 'Legendary'
         return (
           <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 'var(--z-modal)', background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(12px)', padding: 'var(--space-6)' }}>
-            <div style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: `3px solid ${color}`, boxShadow: `0 0 40px ${color}, 0 8px 48px rgba(0,0,0,.4)`, padding: 'var(--space-8) 1.75rem var(--space-7)', textAlign: 'center', position: 'relative' }}>
+            <div style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: `3px solid ${color}`, boxShadow: `0 0 40px ${color}, 0 8px 48px rgba(0,0,0,.4)`, padding: 'var(--space-8) 1.75rem var(--space-6)', textAlign: 'center', position: 'relative' }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.25em', color, marginBottom: 'var(--space-4)', textTransform: 'uppercase' }}>{r.source as string}</div>
               <div className="flex justify-center" style={{ marginBottom: 'var(--space-4)' }}>
                 <EquipmentImage itemKey={r.key as string} itemType={r.itemType as 'weapon' | 'armor' | 'gear'} categories={r.categories as string[]} size="lg" style={{ width: 120, height: 120 }} />

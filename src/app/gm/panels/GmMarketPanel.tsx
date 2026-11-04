@@ -128,7 +128,7 @@ function ChipRow<T extends string>({ options, labels, value, onChange }: {
             onClick={() => onChange(opt)}
             style={{
               fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.1em', textTransform: 'uppercase',
-              background: active ? GOLD : 'var(--hud-surface)', color: active ? 'var(--hud-bg)' : DIM,
+              background: active ? GOLD : 'var(--hud-surface-lo)', color: active ? 'var(--hud-bg)' : DIM,
               border: `1px solid ${active ? GOLD : BORDER}`, borderRadius: RADIUS.sm,
               padding: '0.4375rem 0.625rem', cursor: 'pointer', fontWeight: active ? 700 : 500,
               transition: `background ${EASE.quick}, color ${EASE.quick}, border-color ${EASE.quick}`,
@@ -148,7 +148,7 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
       type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
       style={{
         width: '100%', boxSizing: 'border-box', fontFamily: FONT_BODY, fontSize: FS.label,
-        background: 'var(--hud-surface)', color: TEXT, border: `1px solid ${BORDER}`,
+        background: 'var(--hud-surface-lo)', color: TEXT, border: `1px solid ${BORDER}`,
         borderRadius: RADIUS.sm, padding: '0.5625rem 0.6875rem', outline: 'none',
       }}
     />
@@ -728,7 +728,7 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
                 value={locationMod} onChange={e => touch(setLocationMod)(Number(e.target.value))}
                 style={{
                   width: '100%', boxSizing: 'border-box', fontFamily: FONT_BODY, fontSize: FS.label,
-                  background: 'var(--hud-surface)', color: TEXT, border: `1px solid ${BORDER}`,
+                  background: 'var(--hud-surface-lo)', color: TEXT, border: `1px solid ${BORDER}`,
                   borderRadius: RADIUS.sm, padding: '0.5625rem 0.6875rem', outline: 'none',
                 }}
               >

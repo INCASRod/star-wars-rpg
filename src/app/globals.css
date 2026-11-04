@@ -623,16 +623,16 @@ label, caption, .text-secondary {
   transition: background var(--ease-default), border-color var(--ease-default);
 }
 .staging-tool-btn[data-active] {
-  background: color-mix(in srgb, var(--tool-accent) 8%, transparent);
-  border-color: color-mix(in srgb, var(--tool-accent) 53%, transparent);
+  background: color-mix(in srgb, var(--tool-accent, var(--hud-accent)) 8%, transparent);
+  border-color: color-mix(in srgb, var(--tool-accent, var(--hud-accent)) 53%, transparent);
 }
 .staging-tool-btn:disabled {
   border-color: var(--hud-surface-lo);
   cursor: not-allowed;
 }
 .staging-tool-btn:not(:disabled):not([data-active]):hover {
-  background: color-mix(in srgb, var(--tool-accent) 4%, transparent);
-  border-color: color-mix(in srgb, var(--tool-accent) 27%, transparent);
+  background: color-mix(in srgb, var(--tool-accent, var(--hud-accent)) 4%, transparent);
+  border-color: color-mix(in srgb, var(--tool-accent, var(--hud-accent)) 27%, transparent);
 }
 
 /* Buy-spec trigger button — dashed gold border fades to full gold on hover */

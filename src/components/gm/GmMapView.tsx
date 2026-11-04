@@ -831,7 +831,7 @@ export function GmMapView({
               onClick={() => setLibraryOpen(o => !o)}
               style={{
                 ...btnTool,
-                borderColor: libraryOpen ? 'var(--hud-border-active)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
+                borderColor: libraryOpen ? 'var(--hud-accent)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                 color: libraryOpen ? HUD.gold : DIM,
               }}
             >
@@ -886,7 +886,7 @@ export function GmMapView({
                 style={{
                   ...btnTool,
                   color: tokenDrawerOpen ? 'var(--hud-gold)' : DIM,
-                  borderColor: tokenDrawerOpen ? 'var(--hud-border-active)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
+                  borderColor: tokenDrawerOpen ? 'var(--hud-accent)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                   background: tokenDrawerOpen ? 'rgba(150,168,180,0.1)' : PANEL_BG,
                 }}
               >

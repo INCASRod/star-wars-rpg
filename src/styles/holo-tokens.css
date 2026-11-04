@@ -97,6 +97,7 @@ html {
   /* Use var(--z-*) in CSS; use Z.* from @/lib/tokens in TypeScript. */
   --z-base:        0;
   --z-raised:      10;
+  --z-sticky:      10;   /* = Z.sticky in tokens.ts */
   --z-drawer:      30;
   --z-overlay:     100;
   --z-panel:       100;

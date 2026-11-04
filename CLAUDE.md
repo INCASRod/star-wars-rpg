@@ -261,10 +261,10 @@ These rules enforce the Shinkei design system contract. Violations block task co
 
 ### Theme system
 
-The project has three themes: **Kyber Archive** (default, cyan accent), **Ember Tatooine** (red accent), **neutral**. All accent colours are delivered via `var(--hud-accent)`.
+The project has three themes, ids defined in `src/lib/theme.ts` (`ThemeId`): `ember` (Ember Tatooine, red accent, the default), `kyber` (Kyber Archive, cyan accent) and `gm-imperial` (GM Imperial Steel, forced by `GmShell` for the whole GM view). All accent colours are delivered via `var(--hud-accent)`.
 
 - Never hardcode a theme accent colour — always use `var(--hud-accent)` or `color-mix()` against it.
-- Components must render correctly under all three themes.
+- Components must render correctly under all three themes (`ember`, `kyber`, `gm-imperial`).
 - Never reference `--hud-accent-*` variant tokens — they are internal to the theme layer.
 
 ### Sealed namespaces
@@ -298,7 +298,7 @@ Before completing any new component or modifying an existing one, verify all of 
 - [ ] Zero hardcoded transition timing values
 - [ ] Zero hardcoded px spacing except `1px` borders
 - [ ] Fonts are Space Grotesk and JetBrains Mono only
-- [ ] Component works correctly under all three themes
+- [ ] Component works correctly under all three themes (`ember`, `kyber`, `gm-imperial`)
 - [ ] No `var(--token)HH` opacity patterns
 - [ ] No `--hud-accent-*` variant token references
 - [ ] No `onMouseEnter`/`onMouseLeave` style mutations

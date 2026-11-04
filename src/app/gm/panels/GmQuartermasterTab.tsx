@@ -261,7 +261,7 @@ export function GmQuartermasterTab({
           placeholder="Search the catalogue to add stock…"
           style={{
             flex: 1, boxSizing: 'border-box', fontFamily: FONT_BODY, fontSize: FS.label,
-            background: 'var(--hud-surface)', color: TEXT, border: `1px solid ${BORDER}`,
+            background: 'var(--hud-surface-lo)', color: TEXT, border: `1px solid ${BORDER}`,
             borderRadius: RADIUS.sm, padding: '0.5625rem 0.6875rem', outline: 'none',
           }}
         />
