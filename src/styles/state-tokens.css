@@ -91,6 +91,9 @@
   /* Theme-agnostic result/outcome colors for roll displays.      */
   --state-success:   #4EC87A;
   --state-failure:   #E05050;
+  --state-info:      #4FC3F7;  /* duty blue */
+  --state-warning:   #E09050;  /* mid-threat amber */
+  --state-critical:  #9060D0;  /* obligation 100+ (same value as --hud-accent-purple) */
   --state-advantage: #4EC8C8;
   --state-threat:    #E07855;
   --state-triumph:   #FFD700;

@@ -6,22 +6,25 @@ import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { DutyObligationSetupModal } from './DutyObligationSetupModal'
 import { SessionRollSimulator } from './SessionRollSimulator'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
-import { HUD, FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
+import { HUD, FONT_BODY, RADIUS, EASE, FS, SP } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-// Pre-approved: rgba(0,0,0,*) overlays kept as-is per exception rules.
-// Force conflict purple (#C878F0) is force-identity color — pre-approved exception.
-// Duty blue (#4FC3F7) and obligation red (#E05050) map to CSS state tokens.
-const BLUE = 'var(--state-info)'     // #4FC3F7 → duty colour
-const RED  = 'var(--state-failure)'  // #E05050 → obligation / threat colour
-const AMBER = 'var(--state-warning)' // #E09050 → mid-threat colour
+// ── Colours ───────────────────────────────────────────────────────────────────
+// All four threat bands and the duty colour come from the theme-agnostic state
+// tokens in src/styles/state-tokens.css (--state-info/-success/-warning/-failure/-critical).
+// Every one must be defined there: an undefined var() renders as no colour at all.
+const BLUE  = 'var(--state-info)'     // duty
+const RED   = 'var(--state-failure)'  // obligation, 67-99
+const AMBER = 'var(--state-warning)'  // obligation, 34-66
+// Layout dimensions below (bar height, dot size, column widths, grid minmax) are sizes, not
+// spacing, and have no token. HAIR is the 2px minimum for sub-SP[1] gaps and padding.
+const HAIR = '2px'
 
 const panelBase: React.CSSProperties = {
-  background: 'rgba(8,16,10,0.88)',
+  background: 'color-mix(in srgb, var(--hud-bg) 88%, transparent)',
   border: `1px solid ${HUD.border}`,
   borderRadius: RADIUS.lg,
-  padding: '1rem',
+  padding: SP[3],
 }
 
 function sectionHeader(label: string, color: string) {
@@ -30,7 +33,7 @@ function sectionHeader(label: string, color: string) {
       fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
       color, borderBottom: `1px solid color-mix(in srgb, ${color} 13%, transparent)`,
-      paddingBottom: '0.375rem', marginBottom: '0.75rem',
+      paddingBottom: SP[1], marginBottom: SP[2],
     }}>
       {label}
     </div>
@@ -38,7 +41,7 @@ function sectionHeader(label: string, color: string) {
 }
 
 function getThreatColor(value: number): string {
-  if (value >= 100) return 'var(--hud-accent-purple)'
+  if (value >= 100) return 'var(--state-critical)'
   if (value >= 67) return RED
   if (value >= 34) return AMBER
   return 'var(--state-success)'
@@ -80,11 +83,11 @@ function InlineValue({ value, characterId, field, color, onUpdated }: InlineValu
         onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
         style={{
           width: '3.25rem', textAlign: 'center',
-          background: 'rgba(0,0,0,0.5)',
+          background: 'color-mix(in srgb, var(--hud-bg) 50%, transparent)',
           border: `1px solid color-mix(in srgb, ${color} 38%, transparent)`,
           borderRadius: RADIUS.sm, color,
           fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-          padding: '0.125rem 0.25rem', outline: 'none',
+          padding: `${HAIR} ${SP[1]}`, outline: 'none',
         }}
       />
     )
@@ -124,19 +127,19 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
   const rowColor = isDuty ? color : getThreatColor(value)
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: `1px solid var(--hud-surface-hi)` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], padding: `${SP[1]} 0`, borderBottom: `1px solid var(--hud-surface-hi)` }}>
       <div style={{ flex: '2 1 9rem', minWidth: 0 }}>
-        <div title={character.name} style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, marginBottom: '0.0625rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div title={character.name} style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {character.name}
         </div>
-        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, display: 'flex', alignItems: 'center', gap: SP[1] }}>
           {resolvedTypeName}
           {hasCustomName && (
             <span title="Custom name set by GM" style={{ fontSize: FS.overline, color: HUD.gold, opacity: 0.7 }}>✎</span>
           )}
         </div>
       </div>
-      <div style={{ flex: '1 1 4rem', height: '0.375rem', background: `${rowColor}14`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+      <div style={{ flex: '1 1 4rem', height: '0.375rem', background: `color-mix(in srgb, ${rowColor} 8%, transparent)`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
         <div style={{
           height: '100%',
           width: `${Math.min(100, barPct)}%`,
@@ -156,7 +159,7 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
       </div>
       {!isDuty && (
         <div style={{
-          width: '0.5rem', height: '0.5rem', borderRadius: '50%',
+          width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.full,
           background: getThreatColor(value),
           flexShrink: 0,
         }} />
@@ -209,33 +212,33 @@ export function DutyObligationTab({
   const btnEdit: React.CSSProperties = {
     fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em',
     textTransform: 'uppercase', border: `1px solid ${HUD.border}`,
-    borderRadius: RADIUS.sm, padding: '0.125rem 0.5rem', cursor: 'pointer',
+    borderRadius: RADIUS.sm, padding: `${HAIR} ${SP[1]}`, cursor: 'pointer',
     background: 'transparent', color: HUD.textDim, transition: EASE.quick,
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[4] }}>
 
       {/* ── Unconfigured banner ── */}
       {unconfigured.length > 0 && (
         <div style={{
-          background: 'rgba(200,170,80,0.06)',
-          border: `1px solid rgba(200,170,80,0.3)`,
-          borderRadius: RADIUS.lg, padding: '0.75rem 1rem',
+          background: 'color-mix(in srgb, var(--gold) 6%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--gold) 30%, transparent)',
+          borderRadius: RADIUS.lg, padding: `${SP[2]} ${SP[3]}`,
         }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: HUD.gold, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: HUD.gold, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: SP[1] }}>
             ⚑ Setup Required
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
             {unconfigured.map(c => (
               <button
                 key={c.id}
                 onClick={() => setSetupTarget(c)}
                 style={{
                   fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-                  border: `1px solid rgba(200,170,80,0.4)`,
-                  borderRadius: RADIUS.md, padding: '0.3125rem 0.875rem',
-                  background: 'rgba(200,170,80,0.1)', color: HUD.gold, cursor: 'pointer',
+                  border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)',
+                  borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[2]}`,
+                  background: 'color-mix(in srgb, var(--gold) 10%, transparent)', color: HUD.gold, cursor: 'pointer',
                 }}
               >
                 Configure {c.name}
@@ -246,24 +249,23 @@ export function DutyObligationTab({
       )}
 
       {/* ── Critical Obligation banner ── */}
-      {/* Pre-approved exception: #C878F0 is force-identity purple */}
       {criticalObl.length > 0 && (
         <div style={{
-          background: 'rgba(160,80,220,0.08)',
-          border: '1px solid rgba(160,80,220,0.4)',
-          borderRadius: RADIUS.lg, padding: '0.625rem 0.875rem',
+          background: 'color-mix(in srgb, var(--state-critical) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--state-critical) 40%, transparent)',
+          borderRadius: RADIUS.lg, padding: `${SP[1]} ${SP[2]}`,
         }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: '#C878F0', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: 'var(--state-critical)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: SP[1] }}>
             ☠ Critical Obligation
           </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: '#C878F0', lineHeight: 1.4 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--state-critical)', lineHeight: 1.4 }}>
             {criticalObl.map(c => c.name).join(', ')} — obligation at 100. Triggers automatically every session until reduced.
           </div>
         </div>
       )}
 
       {/* ── Charts ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: SP[3] }}>
 
         {/* Duty chart */}
         <div style={panelBase}>
@@ -280,7 +282,7 @@ export function DutyObligationTab({
               onUpdated={handleInlineUpdate}
             />
           ))}
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, marginTop: '0.625rem', textAlign: 'right' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, marginTop: SP[2], textAlign: 'right' }}>
             Group Total: <span style={{ color: BLUE, fontWeight: 700 }}>{characters.reduce((s, c) => s + (c.duty_value ?? 0), 0)}</span>
           </div>
         </div>
@@ -300,7 +302,7 @@ export function DutyObligationTab({
               onUpdated={handleInlineUpdate}
             />
           ))}
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, marginTop: '0.625rem', textAlign: 'right' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, marginTop: SP[2], textAlign: 'right' }}>
             Group Total: <span style={{ color: RED, fontWeight: 700 }}>{characters.reduce((s, c) => s + (c.obligation_value ?? 0), 0)}</span>
           </div>
         </div>
@@ -321,14 +323,14 @@ export function DutyObligationTab({
       {configured.length > 0 && (
         <div style={panelBase}>
           {sectionHeader('Character Details', HUD.textDim)}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
             {configured.map(c => (
               <div key={c.id} style={{
-                background: 'rgba(8,16,10,0.5)',
-                border: `1px solid var(--hud-surface-hi)`,
-                borderRadius: RADIUS.md, padding: '0.625rem 0.875rem',
+                background: 'color-mix(in srgb, var(--hud-bg) 50%, transparent)',
+                border: '1px solid var(--hud-surface-hi)',
+                borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[2]}`,
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.375rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SP[1] }}>
                   <div style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700, color: HUD.text }}>
                     {c.name}
                   </div>
@@ -339,9 +341,9 @@ export function DutyObligationTab({
                     Edit
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: SP[1] }}>
                   <div>
-                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: BLUE, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.125rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: BLUE, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: HAIR, display: 'flex', alignItems: 'center', gap: SP[1] }}>
                       Duty — {resolveDutyName(c, dutyTypes)} ({c.duty_value ?? 0})
                       {c.duty_custom_name && <span title="Custom name set by GM" style={{ fontSize: FS.overline, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
@@ -352,7 +354,7 @@ export function DutyObligationTab({
                     )}
                   </div>
                   <div>
-                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: getThreatColor(c.obligation_value ?? 0), letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.125rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: getThreatColor(c.obligation_value ?? 0), letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: HAIR, display: 'flex', alignItems: 'center', gap: SP[1] }}>
                       Obligation — {resolveObligationName(c, obligationTypes)} ({c.obligation_value ?? 0})
                       {c.obligation_custom_name && <span title="Custom name set by GM" style={{ fontSize: FS.overline, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
