@@ -431,7 +431,6 @@ export function GmShell() {
             allMaps={allMaps}
             activeMap={activeMap}
             onDeleteMap={removeMap}
-            isStagingTab={true}
             mapHandleRef={mapHandleRef}
             onMapLockChange={setMapLocked}
             hoveredTokenId={hoveredTokenId}

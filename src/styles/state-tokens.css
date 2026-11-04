@@ -146,7 +146,6 @@
   --hud-vital-wounds:   #E03020;
   --hud-vital-strain:   #E8A020;
 
-  --hud-section-ghost: rgba(224, 48, 32, 0.09);
 
   /* ── Talent tree — plaque surfaces ──────────────────────────── */
   --plaque-body:              #0C0906;
@@ -352,7 +351,6 @@
   --hud-vital-strain:   #B07820;
 
   /* Section ghost numbers */
-  --hud-section-ghost: rgba(90, 120, 155, 0.09);
 }
 
 [data-theme="gm-imperial"] .combat-check-btn {

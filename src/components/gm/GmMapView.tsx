@@ -7,7 +7,6 @@ import type { ActiveMap } from '@/hooks/useActiveMap'
 import type { MapToken, TokenGeometryPatch } from '@/hooks/useMapTokens'
 import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
-import { useMapTokens } from '@/hooks/useMapTokens'
 import { useMapPlanets } from '@/hooks/useMapPlanets'
 import type { MapPlanet } from '@/hooks/useMapPlanets'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
@@ -200,17 +199,14 @@ export interface GmMapViewProps {
   allMaps:             ActiveMap[]
   activeMap:           ActiveMap | null
   onDeleteMap:         (mapId: string) => void
-  /** When true, hides the internal floating toolbar (Maps/Upload/Tokens buttons).
-   *  The staging tab provides its own pill toolbar instead. */
-  isStagingTab?:            boolean
-  /** Shared token state lifted to page level — avoids dual hook instances causing stale canvas. */
-  stagingTokens?:              MapToken[]
-  onStagingMoveToken?:         (id: string, x: number, y: number) => Promise<void>
-  onStagingToggleVisibility?:  (id: string, visible: boolean) => Promise<void>
-  onStagingRemoveToken?:       (id: string) => Promise<void>
-  onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
-  onStagingUpdateGeometry?:    (id: string, geo: TokenGeometryPatch) => Promise<void>
-  onStagingPreviewGeometry?:   (id: string, geo: TokenGeometryPatch | null) => void
+  /** Shared token state lifted to GmShell — the one subscription for the whole GM view (no dual hook instances, no stale canvas). */
+  stagingTokens:               MapToken[]
+  onStagingMoveToken:          (id: string, x: number, y: number) => Promise<void>
+  onStagingToggleVisibility:   (id: string, visible: boolean) => Promise<void>
+  onStagingRemoveToken:        (id: string) => Promise<void>
+  onStagingAddToken:           (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  onStagingUpdateGeometry:     (id: string, geo: TokenGeometryPatch) => Promise<void>
+  onStagingPreviewGeometry:    (id: string, geo: TokenGeometryPatch | null) => void
   /** Fired on a genuine tap (not a drag) on a map token — used by the Encounter Deck to focus the corresponding card. */
   onTokenClick?:               (tokenId: string, sourceRect: DOMRect) => void
   /** Encounter Deck open/close state — lifted to GmShell so the left rail button can toggle it. */
@@ -239,7 +235,7 @@ export interface GmMapViewProps {
 }
 
 export function GmMapView({
-  campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
+  campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap,
   stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onStagingUpdateGeometry, onStagingPreviewGeometry, onTokenClick,
   deckOpen, onDeckOpenChange, focusedEntityId, mapHandleRef, onMapLockChange, hoveredTokenId: hoveredTokenIdProp, onHoveredTokenIdChange, setStagingEncounter, saveStagingEncounter,
   updateTokenWoundPct, renameToken, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
@@ -276,15 +272,14 @@ export function GmMapView({
       .then(({ error }) => { if (error) console.warn('[token scale]', error.message) })
   }, [activeMap, supabase])
 
-  // When staging tab passes its own token state, use it — avoids dual subscriptions causing stale canvas
-  const { tokens: hookTokens, moveToken: hookMoveToken, toggleVisibility: hookToggleVisibility, removeToken: hookRemoveToken, addToken: hookAddToken, updateTokenGeometry: hookUpdateGeometry, previewTokenGeometry: hookPreviewGeometry } = useMapTokens(isStagingTab ? null : (activeMap?.id ?? null))
-  const tokens          = isStagingTab ? (stagingTokens ?? [])           : hookTokens
-  const moveToken       = isStagingTab ? (onStagingMoveToken       ?? hookMoveToken)       : hookMoveToken
-  const toggleVisibility = isStagingTab ? (onStagingToggleVisibility ?? hookToggleVisibility) : hookToggleVisibility
-  const removeToken     = isStagingTab ? (onStagingRemoveToken     ?? hookRemoveToken)     : hookRemoveToken
-  const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
-  const updateGeometry  = isStagingTab ? (onStagingUpdateGeometry  ?? hookUpdateGeometry)  : hookUpdateGeometry
-  const previewGeometry  = isStagingTab ? (onStagingPreviewGeometry ?? hookPreviewGeometry) : hookPreviewGeometry
+  // Token state is owned by GmShell and passed in (see props above).
+  const tokens           = stagingTokens
+  const moveToken        = onStagingMoveToken
+  const toggleVisibility = onStagingToggleVisibility
+  const removeToken      = onStagingRemoveToken
+  const addToken         = onStagingAddToken
+  const updateGeometry   = onStagingUpdateGeometry
+  const previewGeometry  = onStagingPreviewGeometry
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -538,7 +533,7 @@ export function GmMapView({
         )}
 
         {/* ── MapToolsRadial floating widget (staging only) ── */}
-        {isStagingTab && campaignId && (
+        {campaignId && (
           <MapToolsRadial
             campaignId={campaignId}
             allMaps={allMaps.filter(m => (m.map_type ?? 'standard') !== 'crawl')}
@@ -550,7 +545,7 @@ export function GmMapView({
         )}
 
         {/* ── Encounter Deck (staging only) ── */}
-        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct
+        {setStagingEncounter && saveStagingEncounter && updateTokenWoundPct
           && markEncounterPending && clearEncounterPending && stagingAddToEncounter && (
           <EncounterDeck
             campaignId={campaignId ?? ''}
@@ -580,7 +575,7 @@ export function GmMapView({
         )}
 
         {/* ── Encounter Dossier (expanded card view, staging only) ── */}
-        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct && renameToken
+        {setStagingEncounter && saveStagingEncounter && updateTokenWoundPct && renameToken
           && markEncounterPending && clearEncounterPending && (
           <EncounterDossier
             entityId={dossierEntityId ?? null}
