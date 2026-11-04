@@ -13,6 +13,7 @@ import type { MapToken } from '@/hooks/useMapTokens'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
+import { NumberField } from '@/components/ui/NumberField'
 import { HUD, FS, SP, FONT_BODY, FONT_DISPLAY, RADIUS, Z, EASE, COLOR } from '@/lib/tokens'
 
 const FC = FONT_BODY
@@ -22,6 +23,9 @@ const GREEN = COLOR.green
 const BORDER_HI = 'var(--hud-border-hi)'
 const PANEL_BG = 'color-mix(in srgb, var(--hud-panel) 92%, transparent)'
 
+/** Upper bound for one Duplicate action. */
+const MAX_DUPLICATES = 20
+
 // Every new adversary/vehicle used to spawn at a hardcoded (0.5, 0.5) — fine
 // for the first add, but each subsequent one landed exactly on top of
 // whatever was already there. Visually that reads as "the new token doesn't
@@ -29,14 +33,15 @@ const PANEL_BG = 'color-mix(in srgb, var(--hud-panel) 92%, transparent)'
 // visible (whichever happens to be topmost in render order, which — because
 // the map_tokens SELECT has no ORDER BY — isn't even guaranteed consistent
 // between two independent page loads). A golden-angle spiral spreads
-// successive spawns out from centre without needing a fixed pattern table.
-function spawnPosition(existingCount: number): { x: number; y: number } {
-  if (existingCount <= 0) return { x: 0.5, y: 0.5 }
+// successive spawns out from centre (or, for Duplicate, from the source token)
+// without needing a fixed pattern table.
+function spawnPosition(existingCount: number, origin: { x: number; y: number } = { x: 0.5, y: 0.5 }): { x: number; y: number } {
+  if (existingCount <= 0) return origin
   const angle  = existingCount * 137.5 * (Math.PI / 180)
   const radius = 0.05 + 0.015 * Math.floor(existingCount / 6)
   return {
-    x: Math.min(0.95, Math.max(0.05, 0.5 + Math.cos(angle) * radius)),
-    y: Math.min(0.95, Math.max(0.05, 0.5 + Math.sin(angle) * radius)),
+    x: Math.min(0.95, Math.max(0.05, origin.x + Math.cos(angle) * radius)),
+    y: Math.min(0.95, Math.max(0.05, origin.y + Math.sin(angle) * radius)),
   }
 }
 
@@ -329,6 +334,82 @@ export function EncounterDeck({
     toast.success(`${instance.name} added to the encounter.`)
   }, [encounter, supabase, addToken, activeMapId, campaignId, nextAutoName, vehImages, tokens])
 
+  // ── Duplicate (clone an existing card + its token, N times) ───────────
+  // Clones the live instance (so GM edits to stats/weapons carry over) with a
+  // fresh id, auto-numbered name, no nickname and all combat state reset, then
+  // places the copies on the ACTIVE map in a ring around the original token.
+  // One combat_encounters write for the whole batch: looping handleAdd* would
+  // have each call read the same stale `encounter` and overwrite the others.
+  const handleDuplicate = useCallback(async (entry: RosterEntry, count: number) => {
+    if (!activeMapId) { toast.error('No active map — open a map before duplicating.'); return }
+    const n = Math.max(1, Math.min(MAX_DUPLICATES, Math.floor(count) || 1))
+    const deck = encounter ?? await ensureEncounterForMap(supabase, campaignId, activeMapId)
+    if (!deck) { toast.error('Could not open the encounter for this map.'); return }
+
+    const isVeh = entry.kind === 'vehicle'
+    const src = entry.entity
+    const base = src.name.replace(/ \d+$/, '')
+    const taken = new Set([...(deck.adversaries ?? []), ...(deck.vehicles ?? [])]
+      .filter(x => x.sourceId === src.sourceId).map(x => x.name))
+    const nextName = () => {
+      let k = 2
+      while (taken.has(`${base} ${k}`)) k++
+      const name = `${base} ${k}`
+      taken.add(name)
+      return name
+    }
+    const newId = () => `${isVeh ? 'veh-' : ''}${src.sourceId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+
+    const advClones: AdversaryInstance[] = []
+    const vehClones: VehicleInstance[] = []
+    const slots: InitiativeSlot[] = []
+    for (let i = 0; i < n; i++) {
+      const name = nextName()
+      const slotId = randomUUID()
+      const shared = { instanceId: newId(), name, nickname: undefined, revealed: false, map_id: activeMapId }
+      const order = (deck.initiative_slots?.length ?? 0) + 1 + i
+      if (isVeh) {
+        const v = structuredClone(src as VehicleInstance)
+        Object.assign(v, shared, { hullTraumaCurrent: 0, systemStrainCurrent: 0 })
+        vehClones.push(v)
+        slots.push({ id: slotId, type: 'npc', alignment: entry.alignment, order, name,
+          acted: false, current: false, successes: 0, advantages: 0, vehicleInstanceId: v.instanceId })
+      } else {
+        const a = structuredClone(src as AdversaryInstance)
+        Object.assign(a, shared, {
+          woundsCurrent: undefined, strainCurrent: undefined, minionWounds: undefined,
+          groupRemaining: a.groupSize, squad_active: undefined, squad_minion_refs: undefined, squad_total_minions: undefined,
+        })
+        advClones.push(a)
+        slots.push({ id: slotId, type: 'npc', alignment: entry.alignment, order, name,
+          acted: false, current: false, successes: 0, advantages: 0, adversaryInstanceId: a.instanceId })
+      }
+    }
+    const { error } = await supabase.from('combat_encounters').update({
+      ...(isVeh ? { vehicles: [...(deck.vehicles ?? []), ...vehClones] } : { adversaries: [...(deck.adversaries ?? []), ...advClones] }),
+      initiative_slots: [...(deck.initiative_slots ?? []), ...slots],
+      updated_at: new Date().toISOString(),
+    }).eq('id', deck.id)
+    if (error) { toast.error(`Could not duplicate ${base}: ${error.message}`); return }
+
+    const origin = tokens.find(tk => tk.id === entry.tokenId) ?? null
+    const onMap = tokens.filter(tk => tk.map_id === activeMapId).length
+    const tokenAlignment = origin?.alignment ?? (isVeh || entry.alignment === 'allied_npc' ? entry.alignment : (src as AdversaryInstance).type)
+    // Parallel: addToken appends with a functional setState, so order does not matter.
+    await Promise.all(Array.from({ length: n }, (_, i) => {
+      const pos = origin ? spawnPosition(i + 1, { x: origin.x, y: origin.y }) : spawnPosition(onMap + i)
+      return addToken({
+        map_id: activeMapId, campaign_id: campaignId,
+        participant_type: 'adversary', character_id: null, participant_id: null,
+        slot_key: slots[i].id, label: slots[i].name, alignment: tokenAlignment,
+        x: pos.x, y: pos.y, is_visible: origin?.is_visible ?? true, token_size: origin?.token_size ?? 1.0, wound_pct: null,
+        token_image_url: origin?.token_image_url ?? entry.imageUrl, token_shape: origin?.token_shape ?? (isVeh ? 'rectangle' : 'circle'),
+        token_w: origin?.token_w ?? null, token_h: origin?.token_h ?? null, token_rot: origin?.token_rot ?? 0,
+      })
+    }))
+    toast.success(n === 1 ? `${slots[0].name} added to the encounter.` : `${n} × ${base} added to the encounter.`)
+  }, [encounter, supabase, addToken, activeMapId, campaignId, tokens])
+
   // ── Off-map add (card only, no token) ───────────────────────────────
   // stagingAddToEncounter only accepts Adversary, not Vehicle (pre-existing
   // asymmetry in the reused hook — not introduced by this task). The library
@@ -537,6 +618,7 @@ export function EncounterDeck({
                         if (adv) void adjustAdversaryWounds(adv, delta)
                         else if (veh) void adjustHullTrauma(veh, delta)
                       }}
+                      onDuplicate={count => void handleDuplicate(entry, count)}
                     />
                   )
                 })
@@ -857,7 +939,7 @@ const smallBtn: React.CSSProperties = {
 // not with group-count) — OFF-MAP was dropped here as a deliberate
 // reduction and later restored to the same slot HIDDEN uses.
 function EntityCard({
-  entry, onClick, focused, highlighted, onHoverStart, onHoverEnd, onAdjustWounds,
+  entry, onClick, focused, highlighted, onHoverStart, onHoverEnd, onAdjustWounds, onDuplicate,
 }: {
   entry:    RosterEntry
   onClick:  (sourceRect: DOMRect) => void
@@ -867,7 +949,12 @@ function EntityCard({
   onHoverStart?: () => void
   onHoverEnd?:   () => void
   onAdjustWounds: (delta: number) => void
+  /** Clone this entry `count` times onto the active map. */
+  onDuplicate: (count: number) => void
 }) {
+  const [dupOpen, setDupOpen] = useState(false)
+  const [dupCount, setDupCount] = useState('1')
+  const dupN = Math.max(1, Math.min(MAX_DUPLICATES, parseInt(dupCount, 10) || 1))
   const accent = entry.alignment === 'allied_npc' ? GREEN : RED
   const pct = Math.max(0, 1 - entry.woundsCurrent / Math.max(1, entry.woundsMax))
   const hpColor = pct > 0.5 ? GREEN : pct > 0.2 ? HUD.gold : RED
@@ -1053,8 +1140,51 @@ function EntityCard({
           <span style={chipStyle}>{soakLabel} <b style={{ color: HUD.text }}>{soakValue}</b></span>
           <span style={chipStyle}>{defLabel} <b style={{ color: HUD.text }}>{defValue}</b></span>
           <span style={chipStyle}>STR <b style={{ color: HUD.text }}>{showStrain ? `${strainCurrent}/${strainMax}` : '—'}</b></span>
+          <button
+            onClick={stop(() => { setDupCount('1'); setDupOpen(true) })}
+            title="Duplicate this card and its token"
+            style={{ ...chipStyle, cursor: 'pointer', color: HUD.gold, borderColor: `color-mix(in srgb, ${HUD.gold} 50%, transparent)` }}
+          >⧉ DUPLICATE</button>
         </div>
       </div>
+      {dupOpen && (
+        <div
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: SP[2], padding: SP[2],
+            background: 'color-mix(in srgb, var(--hud-bg) 94%, transparent)',
+          }}
+        >
+          <span style={{ fontFamily: FD, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', color: HUD.gold, textAlign: 'center' }}>
+            DUPLICATE {entry.displayName.toUpperCase()}
+          </span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: SP[1], fontSize: FS.overline, color: 'var(--hud-text-dim)' }}>
+            Copies
+            <NumberField
+              value={dupCount} min={1} max={MAX_DUPLICATES} autoFocus
+              onChange={e => setDupCount(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { onDuplicate(dupN); setDupOpen(false) }
+                if (e.key === 'Escape') setDupOpen(false)
+              }}
+              style={{
+                width: '3.25rem', textAlign: 'center', userSelect: 'text', background: 'var(--hud-surface-lo)',
+                border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.sm, color: HUD.text,
+                fontFamily: FC, fontSize: FS.label, fontWeight: 700, padding: `2px ${SP[1]}`, outline: 'none',
+              }}
+            />
+          </label>
+          <div style={{ display: 'flex', gap: SP[1] }}>
+            <button
+              onClick={stop(() => { onDuplicate(dupN); setDupOpen(false) })}
+              style={{ ...chipStyle, cursor: 'pointer', color: HUD.gold, borderColor: `color-mix(in srgb, ${HUD.gold} 50%, transparent)` }}
+            >ADD {dupN}</button>
+            <button onClick={stop(() => setDupOpen(false))} style={{ ...chipStyle, cursor: 'pointer' }}>CANCEL</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
