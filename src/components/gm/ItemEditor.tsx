@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -224,6 +225,7 @@ function HpBar({ used, total }: { used: number; total: number }) {
 }
 
 export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase, onClose, onSaved }: ItemEditorProps) {
+  const layers = useModalLayers()
   const isEdit    = !!item
   const isOggDude = isEdit && !item.is_custom
   const isNew     = !isEdit
@@ -700,7 +702,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   // ── Portal ──
   return createPortal(
     <div style={{
-      position: 'fixed', inset: 0, zIndex: Z.modal,
+      position: 'fixed', inset: 0, zIndex: layers.modal,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '1rem',
     }}>

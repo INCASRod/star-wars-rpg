@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { HUD, COLOR, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, SHADOW, Z } from '@/lib/tokens'
@@ -25,6 +26,7 @@ interface GroupStorageModalProps {
 }
 
 export function GroupStorageModal({ assetId, assetName, characterId, onClose }: GroupStorageModalProps) {
+  const layers = useModalLayers()
   const { items, loading, taking, takeItem } = useGroupStorage(assetId)
   const [expandedTakeId, setExpandedTakeId] = useState<string | null>(null)
   const [takeQtyDraft,   setTakeQtyDraft]   = useState(1)
@@ -55,7 +57,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
       <div
         onClick={onClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: Z.overlay,
+          position: 'fixed', inset: 0, zIndex: layers.backdrop,
           background: 'color-mix(in srgb, black 70%, transparent)',
           backdropFilter: 'blur(4px)',
         }}
@@ -66,7 +68,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
         style={{
           position: 'fixed', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          zIndex: Z.modal,
+          zIndex: layers.modal,
           width: 'min(560px, 94vw)', maxHeight: '82vh',
           background: HUD.panel,
           border: `1px solid ${HUD.borderHi}`,

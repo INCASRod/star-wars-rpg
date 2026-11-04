@@ -221,6 +221,7 @@ import { Z } from '@/lib/tokens'
 // Z.fab=500  Z.deck=520  Z.deckExpanded=530  Z.dossier=540
 // Z.dialog=820
 // Z.hudDrawer=8999  Z.hudOverlay=9000  Z.hudCombat=9001
+// Z.gmModalBackdrop=9100  Z.gmModal=9110   (GM modals: above GM rail/top bar; applied through ModalLayerContext, never hardcode in a modal)
 // Z.groupSheetBackdrop=9400  Z.groupSheet=9410
 // Z.toast=9500   (above GM chrome: toasts must never clip under the GM top bar)
 // Z.ceremony=9998  Z.tooltip=9999  Z.hudSupreme=9999

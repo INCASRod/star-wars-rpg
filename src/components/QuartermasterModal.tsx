@@ -1,4 +1,5 @@
 'use client'
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useEffect, useCallback } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { Modal } from '@/components/ui/Modal'
@@ -61,6 +62,7 @@ interface QuartermasterModalProps {
 }
 
 export function QuartermasterModal({ campaignId, characterName, characterId, supabase, onClose, qm, qmLoading, buyRows, buyItem, sellItem }: QuartermasterModalProps) {
+  const layers = useModalLayers()
 
   const [tab,        setTab]        = useState<Tab>('buy')
   const [typeFilter, setTypeFilter] = useState<'all' | 'weapon' | 'armor' | 'gear'>('all')
@@ -199,7 +201,7 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
   const sellPct = qm?.sell_pct ?? 25
 
   return (
-    <Modal open onClose={onClose} zIndex={Z.modal} maxWidth={680}>
+    <Modal open onClose={onClose} maxWidth={680}>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: 480 }}>
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -542,7 +544,7 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
       {viewingRow && (
         <div
           style={{
-            position: 'fixed', inset: 0, zIndex: Z.popover,
+            position: 'fixed', inset: 0, zIndex: layers.modal + (Z.popover - Z.modal),
             background: 'color-mix(in srgb, var(--hud-bg) 75%, transparent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}

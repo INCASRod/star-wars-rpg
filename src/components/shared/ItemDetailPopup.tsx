@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { createPortal } from 'react-dom'
 import type { EditableItem } from '@/components/gm/ItemEditor'
 import { QualityBadge } from '@/components/character/QualityBadge'
@@ -9,7 +10,7 @@ import { IconPicker } from '@/components/shared/IconPicker'
 import type { IconCatalogEntry } from '@/hooks/useItemIconContext'
 import type { ItemTable, IconResolution } from '@/lib/itemIconResolver'
 import type { RefWeaponQuality } from '@/lib/types'
-import { HUD, FONT_BODY, FS, RADIUS, SP, Z, SHADOW } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, RADIUS, SP, SHADOW } from '@/lib/tokens'
 
 // ── Tokens (matches ItemDatabaseTab's own local palette exactly) ────────────
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
@@ -86,12 +87,13 @@ export function ItemDetailPopup({
   pickerOpen, setPickerOpen, pickerBusy, onPickIcon, onResetIcon,
   refQualityMap,
 }: ItemDetailPopupProps) {
+  const layers = useModalLayers()
   if (typeof document === 'undefined') return null
 
   return createPortal(
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: Z.modal,
+        position: 'fixed', inset: 0, zIndex: layers.modal,
         background: 'color-mix(in srgb, var(--hud-bg) 75%, transparent)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}

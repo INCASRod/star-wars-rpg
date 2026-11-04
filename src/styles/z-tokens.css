@@ -15,6 +15,8 @@
   --z-deck-expanded:        530;
   --z-dossier:              540;
   --z-dialog:               820;
+  --z-gm-modal-backdrop:    9100;
+  --z-gm-modal:             9110;
   --z-group-sheet-backdrop: 9400;
   --z-group-sheet:          9410;
   --z-toast:                9500;

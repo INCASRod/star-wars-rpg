@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { RichText } from '@/components/ui/RichText'
 import type { Character } from '@/lib/types'
@@ -162,9 +163,10 @@ export function GmLootModal({
   handleAssignLoot, handleDismissReveal,
   setLootAwardItem,
 }: GmLootModalProps) {
+  const layers = useModalLayers()
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: Z.modal,
+      position: 'fixed', inset: 0, zIndex: layers.modal,
       background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>

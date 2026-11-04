@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
@@ -95,6 +96,7 @@ interface TooltipState {
 
 /* ── Upload modal ──────────────────────────────────────── */
 function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: string; planets: MapPlanet[]; onClose: () => void; onSaved: () => void }) {
+  const layers = useModalLayers()
   const supabase = useMemo(() => createClient(), [])
   const [name, setName]               = useState('')
   const [planetId, setPlanetId]       = useState('')
@@ -134,7 +136,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
   return createPortal(
     <div
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: layers.modal, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       <div
         onClick={e => e.stopPropagation()}

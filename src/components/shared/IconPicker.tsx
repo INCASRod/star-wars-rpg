@@ -1,10 +1,11 @@
 'use client'
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import manifest from '../../../public/images/manifest.json'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 import type { ItemTable, IconResolution, IconRung } from '@/lib/itemIconResolver'
-import { FONT_BODY, HUD, COLOR, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
+import { FONT_BODY, HUD, COLOR, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 const SECTION: Record<ItemTable, keyof typeof manifest> = { weapon: 'weapons', armor: 'armor', gear: 'gear' }
 const TOP_LEVEL = new Set(['Ranged', 'Melee'])
@@ -46,6 +47,7 @@ function pathToKey(table: ItemTable, path: string): string | null {
 }
 
 export function IconPicker({ table, itemName, catalog, currentResolution, onSelect, onReset, onClose, busy, resetDisabled }: IconPickerProps) {
+  const layers = useModalLayers()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [stagedKey, setStagedKey] = useState<string | null>(null)
@@ -110,7 +112,7 @@ export function IconPicker({ table, itemName, catalog, currentResolution, onSele
 
   return createPortal(
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: Z.modal, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[3] }}
+      style={{ position: 'fixed', inset: 0, zIndex: layers.modal, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[3] }}
       onClick={onClose}
     >
       <div style={{ position: 'absolute', inset: 0, background: 'color-mix(in srgb, black 60%, transparent)' }} />

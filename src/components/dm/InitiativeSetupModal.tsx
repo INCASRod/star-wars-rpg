@@ -958,7 +958,7 @@ export function InitiativeSetupModal({
     // GmTopBar and GmLeftRail sit on --z-hud-combat (9001), well above the
     // default modal layer — a full-screen panel has to clear the GM chrome or
     // the rail overlaps column 1 and the deck/FAB cover Lock Order & Start.
-    <Modal open onClose={handleClose} fullScreen zIndex={Z.hudSupreme}>
+    <Modal open onClose={handleClose} fullScreen>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
 
         {/* ── Header bar ── */}

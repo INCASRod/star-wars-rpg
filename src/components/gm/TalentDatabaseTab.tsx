@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Modal } from '@/components/ui/Modal'
@@ -8,7 +9,7 @@ import { ShortcodeHelp, SHORTCODE_HELPER_LINE } from '@/components/ui/Tooltip'
 import type { Character } from '@/lib/types'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { HUD, FONT_BODY, EASE, FS, RADIUS, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -246,6 +247,7 @@ interface EditorPanelProps {
 }
 
 function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorPanelProps) {
+  const layers = useModalLayers()
   const isNew = !talent
 
   const [name,        setName]        = useState(talent?.name ?? '')
@@ -308,12 +310,12 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
       {/* Backdrop */}
       <div
         onClick={handleClose}
-        style={{ position: 'fixed', inset: 0, zIndex: Z.modal - 1, background: 'rgba(0,0,0,0.45)', opacity: visible ? 1 : 0, transition: EASE.panel }}
+        style={{ position: 'fixed', inset: 0, zIndex: layers.backdrop, background: 'rgba(0,0,0,0.45)', opacity: visible ? 1 : 0, transition: EASE.panel }}
       />
 
       {/* Slide-in panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: Z.modal,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: layers.modal,
         width: 'clamp(320px, 38vw, 520px)',
         background: EDITOR_BG,
         borderLeft: `1px solid ${BORDER_HI}`,

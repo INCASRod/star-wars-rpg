@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Z, RADIUS, HUD, MODAL, SP } from '@/lib/tokens'
+import { RADIUS, HUD, MODAL, SP } from '@/lib/tokens'
+import { useModalLayers } from './ModalLayerContext'
 
 export interface ModalProps {
   open:               boolean
@@ -11,7 +12,7 @@ export interface ModalProps {
   children:           React.ReactNode
   /** Max width of the panel. Default 480. */
   maxWidth?:          number | string
-  /** Override the default Z.modal (410) stacking. */
+  /** Override the stacking layer. Default: the modal layer from ModalLayerContext (Z.modal, or the GM layer inside GmShell). */
   zIndex?:            number
   /** Full CSS color for the panel border. Defaults to HUD.borderHi (gold). */
   borderColor?:       string
@@ -71,7 +72,7 @@ export function Modal({
   onClose,
   children,
   maxWidth = '30rem',
-  zIndex = Z.modal,
+  zIndex: zIndexProp,
   borderColor,
   shadow,
   backdrop,
@@ -82,6 +83,8 @@ export function Modal({
   portalExtra,
   exitMs = 0,
 }: ModalProps) {
+  const layers = useModalLayers()
+  const zIndex = zIndexProp ?? layers.modal
   useEffect(() => {
     if (!open || !onClose) return
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }

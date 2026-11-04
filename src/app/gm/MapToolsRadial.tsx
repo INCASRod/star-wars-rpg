@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
@@ -921,7 +922,6 @@ const PANEL_STYLE: React.CSSProperties = {
   width:                340,
   maxHeight:            '70vh',
   overflowY:            'auto',
-  zIndex:               Z.modal,
   background:           HUD.bg,
   border:               `1px solid ${HUD.borderHi}`,
   borderRadius:         RADIUS.xl,
@@ -955,8 +955,9 @@ function FloatingPanel({
 }: {
   title: string; onClose: () => void; arcId: ArcId; children: React.ReactNode
 }) {
+  const layers = useModalLayers()
   return (
-    <div style={PANEL_STYLE}>
+    <div style={{ ...PANEL_STYLE, zIndex: layers.modal }}>
       {/* Header */}
       <div style={{
         display:        'flex',

@@ -1,5 +1,6 @@
 'use client'
 
+import { useModalLayers } from '@/components/ui/ModalLayerContext'
 import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
@@ -7,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import type { Character } from '@/lib/types'
 import type { MapToken } from '@/hooks/useMapTokens'
-import { HUD, FONT_BODY as FONT, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY as FONT, FONT_DISPLAY, FS, SP, RADIUS } from '@/lib/tokens'
 import { PcCheckConsole } from './PcCheckConsole'
 
 export interface GmCharacterDossierProps {
@@ -32,6 +33,7 @@ const CHAR_ROW: Array<[keyof Character, string]> = [
 ]
 
 export function GmCharacterDossier({ character, campaignId, mapId, tokens, addToken, removeToken, onArchive, onClose, originRect }: GmCharacterDossierProps) {
+  const layers = useModalLayers()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
@@ -111,12 +113,12 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
 
   return createPortal(
     <>
-      <div onClick={handleClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
+      <div onClick={handleClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: layers.backdrop }} />
       <div ref={dossierRef} style={{
         // No CSS `transform: translate(-50%,-50%)` here — the useLayoutEffect
         // above sets xPercent/yPercent via GSAP instead (see EncounterDossier.tsx).
         position: 'fixed', left: '50%', top: '50%',
-        zIndex: Z.modal, width: 'min(58.75rem, 96vw)',
+        zIndex: layers.modal, width: 'min(58.75rem, 96vw)',
         background: 'var(--hud-panel)', border: '1px solid var(--hud-border-hi)',
         boxShadow: '0 26px 90px color-mix(in srgb, var(--hud-bg) 75%, transparent)',
       }}>

@@ -32,6 +32,7 @@ import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { DestinyPoolDisplay } from '@/components/destiny/DestinyPoolDisplay'
 import { CharacterLoader } from '@/components/ui/CharacterLoader'
 import { Modal } from '@/components/ui/Modal'
+import { ModalLayerContext, GM_MODAL_LAYERS } from '@/components/ui/ModalLayerContext'
 
 import { GmLeftRail, type GmPanelId } from './GmLeftRail'
 import { GmReferenceLibraryPanel } from '@/components/gm/GmReferenceLibraryPanel'
@@ -399,6 +400,7 @@ export function GmShell() {
 
   // ── Render ───────────────────────────────────────────────────────
   return (
+    <ModalLayerContext.Provider value={GM_MODAL_LAYERS}>
     <div
       data-theme="gm-imperial"
       style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'var(--hud-bg)' }}
@@ -705,7 +707,7 @@ export function GmShell() {
         const selStr = moralityStrengths.find(m => m.key === moralitySetup.strengthKey)
         const selWk  = moralityWeaknesses.find(m => m.key === moralitySetup.weaknessKey)
         return (
-          <Modal open zIndex={200} maxWidth="30rem" backdrop="rgba(0,0,0,0.65)" borderColor="rgba(90,170,224,0.3)" shadow="0 8px 40px rgba(90,170,224,0.12)">
+          <Modal open maxWidth="30rem" backdrop="rgba(0,0,0,0.65)" borderColor="rgba(90,170,224,0.3)" shadow="0 8px 40px rgba(90,170,224,0.12)">
             <div style={{ padding: '1.5rem' }}>
               <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--die-force)', letterSpacing: '0.15em', marginBottom: '0.875rem' }}>✦ Configure Morality — {moralitySetup.name}</div>
               <div style={{ marginBottom: '0.875rem' }}>
@@ -752,7 +754,7 @@ export function GmShell() {
 
       {/* ── Dark Side Fall / Redemption ── */}
       {fallenConfirm && (
-        <Modal open zIndex={200} maxWidth="28rem" backdrop="rgba(0,0,0,0.65)"
+        <Modal open maxWidth="28rem" backdrop="rgba(0,0,0,0.65)"
           borderColor={fallenConfirm.isFallen ? 'rgba(126,200,227,0.3)' : 'rgba(139,43,226,0.35)'}
           shadow={fallenConfirm.isFallen ? '0 8px 40px rgba(126,200,227,0.15)' : '0 8px 40px rgba(139,43,226,0.2)'}>
           <div style={{ padding: '1.5rem' }}>
@@ -787,7 +789,7 @@ export function GmShell() {
 
       {/* ── Archive Confirmation ── */}
       {archiveConfirm && (
-        <Modal open zIndex={200} maxWidth="26rem" backdrop="rgba(0,0,0,0.6)" shadow="0 8px 40px rgba(0,0,0,0.5)">
+        <Modal open maxWidth="26rem" backdrop="rgba(0,0,0,0.6)" shadow="0 8px 40px rgba(0,0,0,0.5)">
           <div style={{ padding: '1.5rem' }}>
             <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'rgba(150,168,180,0.55)', letterSpacing: '0.15em', marginBottom: '0.75rem' }}>Archive Character</div>
             <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', lineHeight: 1.7, marginBottom: '1.25rem' }}>
@@ -819,8 +821,8 @@ export function GmShell() {
       {/* ── Destiny Manual Adjust ── */}
       {manualAdjustOpen && typeof window !== 'undefined' && createPortal(
         <>
-          <div onClick={() => setManualAdjustOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: Z.backdrop }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: Z.modal, width: 'clamp(320px, 40vw, 440px)', background: 'var(--hud-panel)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--hud-border-hi)', borderRadius: RADIUS.xl, padding: '1.5rem 1.75rem' }}>
+          <div onClick={() => setManualAdjustOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: GM_MODAL_LAYERS.backdrop }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: GM_MODAL_LAYERS.modal, width: 'clamp(320px, 40vw, 440px)', background: 'var(--hud-panel)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--hud-border-hi)', borderRadius: RADIUS.xl, padding: '1.5rem 1.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>✎ Adjust Destiny Pool</span>
               <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '2px 8px' }}>✕</button>
@@ -866,5 +868,6 @@ export function GmShell() {
       />
       <GmReferenceDrawer open={referenceOpen} onClose={() => setReferenceOpen(false)} />
     </div>
+    </ModalLayerContext.Provider>
   )
 }

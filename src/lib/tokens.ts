@@ -112,6 +112,8 @@ export const Z = {
   deckExpanded: 530,   // Encounter Deck expanded rail/search — above the deck's own handle
   dossier:      540,   // Encounter Dossier (expanded card view) — above the deck's own expanded layer
   dialog:     820,
+  gmModalBackdrop:    9100, // GM modal scrims: above GM chrome (top bar 9001, staging rails 9003), below GroupSheet
+  gmModal:            9110, // GM modal panels
   groupSheetBackdrop: 9400, // GroupSheet scrim: above GM/HUD chrome (hudCombat 9001, staging rails 9003), below toasts
   groupSheet:         9410, // GroupSheet slide-in panel
   toast:      9500,   // above GM chrome (top bar 9001, staging rails 9002/9003) so toasts never clip under it
