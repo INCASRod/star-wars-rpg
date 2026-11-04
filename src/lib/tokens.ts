@@ -111,8 +111,11 @@ export const Z = {
   deck:         520,   // Encounter Deck handle + collapsed body — above MapToolsRadial
   deckExpanded: 530,   // Encounter Deck expanded rail/search — above the deck's own handle
   dossier:      540,   // Encounter Dossier (expanded card view) — above the deck's own expanded layer
-  toast:      800,
   dialog:     820,
+  groupSheetBackdrop: 9400, // GroupSheet scrim: above GM/HUD chrome (hudCombat 9001, staging rails 9003), below toasts
+  groupSheet:         9410, // GroupSheet slide-in panel
+  toast:      9500,   // above GM chrome (top bar 9001, staging rails 9002/9003) so toasts never clip under it
+  ceremony:   9998,   // full-screen ceremonies (PurchaseCeremony, PresenceFlash, ForcePanel overlay); tooltips stay above
   tooltip:    9999,
   // ── HUD high-stack layer (values from holo-tokens.css) ──────
   hudDrawer:  8999,   // --z-hud-drawer  — behind full overlay

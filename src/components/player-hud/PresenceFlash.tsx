@@ -98,7 +98,7 @@ export function PresenceFlash({ variant, onDismiss }: PresenceFlashProps) {
   }, [prefersReducedMotion])
 
   const content = (
-    <div style={{ position: 'fixed', inset: 0, zIndex: Z.hudSupreme, pointerEvents: 'none' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: Z.ceremony, pointerEvents: 'none' }}>
       <div
         ref={innerRef}
         style={{

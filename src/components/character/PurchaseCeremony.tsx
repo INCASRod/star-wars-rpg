@@ -182,7 +182,7 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
     <div
       ref={backdropRef}
       style={{
-        position: 'fixed', inset: 0, zIndex: Z.hudSupreme,
+        position: 'fixed', inset: 0, zIndex: Z.ceremony,
         background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)',
         backdropFilter: 'blur(3px)',
         opacity: 0,

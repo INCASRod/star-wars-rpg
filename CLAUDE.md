@@ -219,8 +219,11 @@ import { Z } from '@/lib/tokens'
 // Z.base=0  Z.raised=1  Z.sticky=10  Z.dropdown=20  Z.drawer=30
 // Z.overlay=100  Z.backdrop=400  Z.modal=410  Z.popover=420
 // Z.fab=500  Z.deck=520  Z.deckExpanded=530  Z.dossier=540
-// Z.toast=800  Z.dialog=820  Z.tooltip=9999
-// Z.hudDrawer=8999  Z.hudOverlay=9000  Z.hudCombat=9001  Z.hudSupreme=9999
+// Z.dialog=820
+// Z.hudDrawer=8999  Z.hudOverlay=9000  Z.hudCombat=9001
+// Z.groupSheetBackdrop=9400  Z.groupSheet=9410
+// Z.toast=9500   (above GM chrome: toasts must never clip under the GM top bar)
+// Z.ceremony=9998  Z.tooltip=9999  Z.hudSupreme=9999
 ```
 
 ### Border radius

@@ -1,6 +1,6 @@
 {
   "name": "holocron",
-  "version": "1.6.6",
+  "version": "1.6.7",
   "private": true,
   "scripts": {
     "predev": "node scripts/build-console-editor.js && tsx scripts/gen-z-tokens.ts",

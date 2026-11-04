@@ -17,7 +17,7 @@ import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { useIsGm } from '@/hooks/useIsGm'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
 import { GroupStorageModal } from '@/components/group/GroupStorageModal'
-import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, SP, Z } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
 
 const FONT_MONO = 'var(--font-body)'
@@ -1468,7 +1468,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose, gmUnlocke
       <div
         onClick={handleClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: 10050,
+          position: 'fixed', inset: 0, zIndex: Z.groupSheetBackdrop,
           background: 'rgba(0,0,0,0.5)',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.26s',
@@ -1477,7 +1477,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose, gmUnlocke
 
       {/* Slide-in panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10060,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: Z.groupSheet,
         width: 'clamp(340px, 42vw, 560px)',
         background: 'var(--hud-surface-hi)',
         backdropFilter: 'blur(18px)',

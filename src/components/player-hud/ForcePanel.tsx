@@ -662,7 +662,7 @@ function runCommitFlight(sourceEl: HTMLElement, targetEl: HTMLElement) {
   flyer.setAttribute('aria-hidden', 'true')
   Object.assign(flyer.style, {
     position: 'fixed',
-    zIndex: String(Z.hudSupreme),
+    zIndex: String(Z.ceremony),
     left: `${sourceRect.left + sourceRect.width / 2 - size / 2}px`,
     top: `${sourceRect.top + sourceRect.height / 2 - size / 2}px`,
     width: `${size}px`,

@@ -34,7 +34,7 @@ export function HudSpendCreditsModal({ open, onClose, credits, onConfirm }: HudS
 
   return createPortal(
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: Z.toast, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      style={{ position: 'fixed', inset: 0, zIndex: Z.modal, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={handleClose}
     >
       <div

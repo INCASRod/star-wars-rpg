@@ -9,9 +9,9 @@ import { renderZCss, Z_CSS_PATH, Z_ENTRIES, kebab } from './z-tokens-lib'
 // RATCHET: raw numeric z-index sites currently allowed in src/. This number may ONLY go DOWN:
 // when you replace a raw number with a `Z` layer, lower it to the new count. Never raise it to
 // make a failing check pass; add or reuse a layer in `Z` (src/lib/tokens.ts) instead.
-// Baseline recorded 2026-11-04 (prompt G, phase 1). Counts CSS `z-index: <n>` and TSX `zIndex: <n>`,
+// Baseline recorded 2026-11-04 (prompt G, phase 1: 103; phase 2 removed GroupSheet's two raw numbers: 101). Counts CSS `z-index: <n>` and TSX `zIndex: <n>`,
 // skipping comment-only lines. (Audit F counted 104; one of those was a comment in StagingTopBar.tsx.)
-const RAW_Z_BASELINE = 103
+const RAW_Z_BASELINE = 101
 
 const errors: string[] = []
 const norm = (p: string) => p.split('\\').join('/')
