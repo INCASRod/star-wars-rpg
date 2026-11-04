@@ -126,26 +126,6 @@
   transition: opacity 40ms ease;
 }
 
-/* ── SECTION HEADER GHOST NUMBER ─────────────────
- * Already defined in state-tokens.css as
- * --hud-section-ghost. This rule ensures the
- * ghost number is always positioned correctly
- * relative to the label text.
- * ──────────────────────────────────────────────── */
-
-.section-ghost-num {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--hud-section-ghost);
-  line-height: 1;
-  margin-right: var(--space-2);
-  letter-spacing: -0.02em;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-
 /* ── PANEL CLOSE — reverse stagger ──────────────
  * When the open class is removed, rows snap back
  * immediately (no delay on close) so the panel
