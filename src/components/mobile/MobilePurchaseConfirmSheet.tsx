@@ -1,5 +1,6 @@
 'use client'
 
+import { useXpHold, XP_FROZEN_MESSAGE } from '@/lib/xpSpendingFreeze'
 import { useEffect, useRef, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { MobileBottomSheet } from './MobileBottomSheet'
@@ -46,6 +47,7 @@ export interface MobilePurchaseConfirmSheetProps {
  * decision is still made entirely inside the reused mutator.
  */
 export function MobilePurchaseConfirmSheet({ pending, onClose, xpAvailable, supabase, characterId }: MobilePurchaseConfirmSheetProps) {
+  const xpHold = useXpHold()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const queueRef = useRef<Promise<void>>(Promise.resolve())
@@ -63,6 +65,7 @@ export function MobilePurchaseConfirmSheet({ pending, onClose, xpAvailable, supa
 
   function handleConfirm() {
     if (busy) return
+    if (xpHold.frozen) { setError(XP_FROZEN_MESSAGE); return }
     setBusy(true)
     setError(null)
     queueRef.current = queueRef.current.then(async () => {
@@ -79,6 +82,7 @@ export function MobilePurchaseConfirmSheet({ pending, onClose, xpAvailable, supa
         await p.execute()
         onClose()
       } catch (err) {
+        if (err instanceof Error && err.message === XP_FROZEN_MESSAGE) { setError(XP_FROZEN_MESSAGE); setBusy(false); return }
         console.error('[MobilePurchaseConfirmSheet] purchase failed:', err)
         // Non-transactional write path (Step 0, 3.3) — a failure here could
         // mean XP was deducted with no acquisition record, or vice versa.
@@ -108,7 +112,7 @@ export function MobilePurchaseConfirmSheet({ pending, onClose, xpAvailable, supa
       <div className="m-purchase-confirm-label">{pending.label}</div>
       <div className="m-purchase-confirm-cost">{pending.cost} XP</div>
 
-      <button type="button" className="m-purchase-confirm-btn" onClick={handleConfirm} disabled={busy}>
+      <button type="button" className="m-purchase-confirm-btn" onClick={handleConfirm} disabled={busy || xpHold.frozen} title={xpHold.frozen ? 'Paused by the GM' : undefined}>
         {busy ? 'Purchasing…' : 'Confirm Purchase'}
       </button>
 

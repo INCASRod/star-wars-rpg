@@ -1,5 +1,6 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DiceModal } from './DiceModal'
 import { ForceRollModal } from './ForceRollModal'
@@ -117,6 +118,7 @@ export function HudModalsOverlay({
   pendingForceRatingOffer, setPendingForceRatingOffer, onPurchaseForceRating,
   diceOpen, onDiceOpenChange,
 }: HudModalsOverlayProps) {
+  const xpHold = useXpHold()
   return (
     <>
       {rollResult && (
@@ -379,7 +381,8 @@ export function HudModalsOverlay({
               </button>
               <button
                 onClick={async () => { setPendingForceRatingOffer(false); await onPurchaseForceRating() }}
-                disabled={character.xp_available < 10}
+                disabled={character.xp_available < 10 || xpHold.frozen}
+                title={xpHold.frozen ? 'Paused by the GM' : undefined}
                 style={{
                   background: character.xp_available < 10 ? 'var(--hud-surface-lo)' : 'var(--die-force)',
                   border: 'none', padding: 'var(--space-3) 2.5rem',

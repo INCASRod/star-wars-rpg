@@ -1,5 +1,7 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
 import type { HudSkill } from '@/lib/types'
 import { MobileBottomSheet } from './MobileBottomSheet'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -33,16 +35,19 @@ export interface MobileSkillDetailSheetProps {
 }
 
 export function MobileSkillDetailSheet({ open, onClose, skill, xpAvailable, onRequestPurchase, onBuySkill }: MobileSkillDetailSheetProps) {
+  const xpHold = useXpHold()
   if (!skill) return null
 
   const atMax = skill.rank >= 5
   const nextRank = skill.rank + 1
   const cost = nextRankCost(nextRank, skill.isCareer)
   const affordable = xpAvailable >= cost
-  const canBuy = !atMax && affordable
+  const canBuy = !atMax && affordable && !xpHold.frozen
   const disabledReason = atMax
     ? 'Already at maximum rank (5).'
-    : !affordable
+    : xpHold.frozen
+      ? 'Paused by the GM'
+      : !affordable
       ? `Not enough XP — need ${cost}, have ${xpAvailable}.`
       : undefined
 
@@ -72,6 +77,7 @@ export function MobileSkillDetailSheet({ open, onClose, skill, xpAvailable, onRe
         </>
       }
     >
+      <XpHoldBanner />
       <div className="m-detail-eyebrow">{skill.charKey.toUpperCase()} {skill.charVal} · {skill.isCareer ? 'Career' : 'Non-career'}</div>
       <div className="m-detail-name">{skill.name}</div>
 

@@ -1,5 +1,7 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
 import { useMemo, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
@@ -84,6 +86,7 @@ export function MobileAbilitiesDestination({
   onOpenSkillCheck, onOpenForceCheck, supabase,
   onPurchaseTalent, onBuySkill, onPurchaseForceAbility, onLockInSigAbility, onPurchaseSigNode,
 }: MobileAbilitiesDestinationProps) {
+  const xpHold = useXpHold()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [view, setView] = useState<{ mode: 'search' } | { mode: 'tree'; tab: TreeTab }>({ mode: 'search' })
@@ -105,6 +108,7 @@ export function MobileAbilitiesDestination({
     ? (() => {
         const target = detail.purchaseTarget!
         if (detail.state !== 'available') return { canBuy: false, disabledReason: undefined, onBuy: () => {} }
+        if (xpHold.frozen) return { canBuy: false, disabledReason: 'Paused by the GM', onBuy: () => {} }
         const affordable = xpAvailable >= detail.cost
         if (target.kind === 'sig-base' && !hasUnlockedTier5) {
           return { canBuy: false, disabledReason: 'Requires a Tier 5 talent unlocked in an in-career specialisation.', onBuy: () => {} }
@@ -279,6 +283,7 @@ export function MobileAbilitiesDestination({
 
   return (
     <div className="m-abilities">
+      <XpHoldBanner />
       <div className="m-search-sticky">
         <input
           type="search"

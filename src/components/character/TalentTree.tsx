@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { RichText } from '@/components/ui/RichText'
 import { HUD, FS, FONT_BODY, FONT_DISPLAY, RADIUS, Z, ACTIVATION_TOKEN, SP } from '@/lib/tokens'
@@ -332,6 +333,7 @@ export function TalentTree({
   xpAvailable,
   previewMode,
 }: TalentTreeProps) {
+  const xpHold = useXpHold()
   const [selectedNode, setSelectedNode] = useState<TalentTreeNode | null>(null)
   // Memoized (Prompt 8) — this used to be a plain for-loop rebuilding a new
   // Map every render, which is what made `isOwned` below a fresh closure
@@ -522,7 +524,7 @@ export function TalentTree({
       const affordable = xpAvailable === undefined || xpAvailable >= n.cost
       return {
         kind: 'purchase',
-        disabledReason: affordable ? undefined : `Not enough XP — need ${n.cost}, have ${xpAvailable}`,
+        disabledReason: xpHold.frozen ? 'Paused by the GM' : affordable ? undefined : `Not enough XP — need ${n.cost}, have ${xpAvailable}`,
         onConfirm: async () => {
           if (!onPurchase) return
           // Kill any live energy trace before the ceremony takes over — traces

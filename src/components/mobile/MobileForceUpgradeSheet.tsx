@@ -1,5 +1,7 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import { RichText } from '@/components/ui/RichText'
 import { MobileBottomSheet } from './MobileBottomSheet'
@@ -25,6 +27,7 @@ export interface MobileForceUpgradeSheetProps {
 export function MobileForceUpgradeSheet({
   open, onClose, power, xpAvailable, forceRating, onRequestPurchase, onPurchaseForceAbility,
 }: MobileForceUpgradeSheetProps) {
+  const xpHold = useXpHold()
   if (!power) return null
 
   const nodes = power.treeNodes
@@ -39,6 +42,7 @@ export function MobileForceUpgradeSheet({
       expandedHeight="85dvh"
       footer={<button type="button" className="m-sheet-btn" onClick={onClose}>Close</button>}
     >
+      <XpHoldBanner />
       <div className="m-detail-eyebrow">Force Power · {power.purchasedCount}/{power.totalCount} abilities</div>
       <div className="m-detail-name">{power.powerName}</div>
       {power.description && (
@@ -53,14 +57,16 @@ export function MobileForceUpgradeSheet({
           const atMax = node.purchased
           const affordable = xpAvailable >= node.cost
           const forceOk = forceRating >= 1
-          const canBuy = !atMax && node.canPurchase && affordable && forceOk
+          const canBuy = !atMax && node.canPurchase && affordable && forceOk && !xpHold.frozen
           const disabledReason = atMax
             ? undefined
             : !node.canPurchase
               ? 'Prerequisite not owned.'
               : !forceOk
                 ? 'Force Rating 1 required.'
-                : !affordable
+                : xpHold.frozen
+                  ? 'Paused by the GM'
+                  : !affordable
                   ? `Not enough XP — need ${node.cost}, have ${xpAvailable}.`
                   : undefined
           return (

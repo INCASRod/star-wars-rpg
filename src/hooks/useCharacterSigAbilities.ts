@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import { getRefData } from '@/lib/refDataCache'
 import { randomUUID } from '@/lib/utils'
-import { xpSpendingBlocked } from '@/lib/xpSpendingFreeze'
+import { xpSpendingBlocked, persistXpDebit, XP_FROZEN_MESSAGE } from '@/lib/xpSpendingFreeze'
 import type { SigAbility, SigAbilityNode, LockedSigAbility, CharacterSigAbilityNode } from '@/lib/types'
 
 const TIER_5_XP_COST = 25
@@ -169,7 +169,7 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     if (!baseNode) throw new Error(`No base node found for signature ability ${sigAbilityKey}`)
 
     const supabase = createClient()
-    if (await xpSpendingBlocked(supabase)) return
+    if (await xpSpendingBlocked(supabase)) throw new Error(XP_FROZEN_MESSAGE)
     const id = randomUUID()
     const purchasedAt = new Date().toISOString()
 
@@ -183,13 +183,14 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', characterId).single()
     const newXp = (charRow?.xp_available ?? 0) - baseNode.xpCost
 
-    await Promise.all([
-      supabase.from('character_sig_ability_nodes').insert({
+    if (!(await persistXpDebit(supabase, characterId, { xp_available: newXp }))) {
+      setPurchasedNodes(prev => prev.filter(n => n.id !== id))
+      throw new Error(XP_FROZEN_MESSAGE)
+    }
+    await supabase.from('character_sig_ability_nodes').insert({
         id, character_id: characterId, sig_ability_key: sigAbilityKey, node_key: baseNode.nodeKey,
         col_index: baseNode.colIndex, row_index: 0, xp_cost: baseNode.xpCost, spec_slot: specSlot,
-      }),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', characterId),
-    ])
+    })
   }, [hasUnlockedTier5, availableSigAbilities, characterId])
 
   const purchaseNode = useCallback(async (sigAbilityKey: string, node: SigAbilityNode) => {
@@ -199,7 +200,7 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     }
 
     const supabase = createClient()
-    if (await xpSpendingBlocked(supabase)) return
+    if (await xpSpendingBlocked(supabase)) throw new Error(XP_FROZEN_MESSAGE)
     const id = randomUUID()
     const purchasedAt = new Date().toISOString()
 
@@ -213,13 +214,14 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', characterId).single()
     const newXp = (charRow?.xp_available ?? 0) - node.xpCost
 
-    await Promise.all([
-      supabase.from('character_sig_ability_nodes').insert({
+    if (!(await persistXpDebit(supabase, characterId, { xp_available: newXp }))) {
+      setPurchasedNodes(prev => prev.filter(n => n.id !== id))
+      throw new Error(XP_FROZEN_MESSAGE)
+    }
+    await supabase.from('character_sig_ability_nodes').insert({
         id, character_id: characterId, sig_ability_key: sigAbilityKey, node_key: node.nodeKey,
         col_index: node.colIndex, row_index: node.rowIndex, xp_cost: node.xpCost, spec_slot: locked.specSlot,
-      }),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', characterId),
-    ])
+    })
   }, [lockedAbilities, characterId])
 
   return {

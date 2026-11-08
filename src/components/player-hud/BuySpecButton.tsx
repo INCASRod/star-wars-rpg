@@ -1,5 +1,7 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { specPurchaseCost } from '@/hooks/useCharacterData'
@@ -24,6 +26,7 @@ export function BuySpecButton({
   specKeyToCareerName: Record<string, string>
   onBuy: (specKey: string) => void
 }) {
+  const xpHold = useXpHold()
   const [open, setOpen] = useState(false)
   const ownedKeys = new Set(charSpecs.map(s => s.specialization_key))
 
@@ -100,6 +103,7 @@ export function BuySpecButton({
           >×</button>
         </div>
 
+        <XpHoldBanner />
         {/* XP info */}
         <div style={{
           fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim,
@@ -125,7 +129,7 @@ export function BuySpecButton({
             getSpecCost={spec => specPurchaseCost(charSpecs.length, careerSpecKeys.has(spec.key))}
             canAfford={spec => {
               const cost = specPurchaseCost(charSpecs.length, careerSpecKeys.has(spec.key))
-              return character.xp_available >= cost
+              return !xpHold.frozen && character.xp_available >= cost
             }}
             onSelect={spec => { onBuy(spec.key); setOpen(false) }}
             autoFocus

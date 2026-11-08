@@ -8,6 +8,7 @@ import { SessionRollSimulator } from './SessionRollSimulator'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
 import { HUD, FONT_BODY, RADIUS, EASE, FS, SP } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
+import { useXpHold, setXpHold } from '@/lib/xpSpendingFreeze'
 
 // ── Colours ───────────────────────────────────────────────────────────────────
 // All four threat bands and the duty colour come from the theme-agnostic state
@@ -178,6 +179,81 @@ interface DutyObligationTabProps {
   campaignId?: string | null
 }
 
+// ── XP hold: GM pause on player XP spending ──────────────────────────────────
+// Manual only. Players keep earning XP; the database refuses their spending while on (migration 161).
+
+function XpHoldPanel({ partyObligation }: { partyObligation: number }) {
+  const hold = useXpHold()
+  // The typed text; null means "show the saved reason" (kept after a hold is lifted so it can be reused).
+  const [draft, setDraft] = useState<string | null>(null)
+  const reason = draft ?? hold.reason ?? ''
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function toggle() {
+    if (!hold.id || busy) return
+    setBusy(true)
+    setError(null)
+    const err = await setXpHold(createClient(), hold.id, !hold.frozen, reason)
+    if (err) setError(err)
+    else setDraft(null)
+    setBusy(false)
+  }
+
+  const over = partyObligation > 100
+  const ready = !!hold.id && !hold.loading
+  return (
+    <div style={panelBase}>
+      {sectionHeader('XP Spending', hold.frozen ? 'var(--state-warning)' : HUD.textDim)}
+      {over && (
+        <div style={{
+          fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--state-critical)', lineHeight: 1.4, marginBottom: SP[2],
+        }}>
+          Party Obligation is over 100. By the rules, XP spending is frozen until it drops back to 100.
+        </div>
+      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: SP[2] }}>
+        <input
+          type="text"
+          value={reason}
+          maxLength={80}
+          disabled={hold.frozen}
+          onChange={e => setDraft(e.target.value)}
+          placeholder="e.g. Party Obligation is over 100"
+          aria-label="Reason shown to players"
+          style={{
+            flex: '1 1 14rem', minWidth: 0, fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.text,
+            background: 'color-mix(in srgb, var(--hud-bg) 50%, transparent)', border: `1px solid ${HUD.border}`,
+            borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+          }}
+        />
+        <button
+          type="button"
+          role="switch"
+          aria-checked={hold.frozen}
+          disabled={!ready || busy}
+          onClick={() => void toggle()}
+          style={{
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, cursor: ready && !busy ? 'pointer' : 'not-allowed',
+            borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[3]}`, transition: EASE.quick,
+            color: hold.frozen ? 'var(--state-warning)' : HUD.textDim,
+            background: hold.frozen ? 'color-mix(in srgb, var(--state-warning) 12%, transparent)' : 'transparent',
+            border: `1px solid ${hold.frozen ? 'color-mix(in srgb, var(--state-warning) 45%, transparent)' : HUD.border}`,
+          }}
+        >
+          {hold.frozen ? 'Resume XP spending' : 'Pause XP spending'}
+        </button>
+      </div>
+      {hold.frozen && (
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, marginTop: SP[2] }}>
+          Players cannot spend XP. They can still earn it.
+        </div>
+      )}
+      {error && <div role="alert" style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--state-failure)', marginTop: SP[2] }}>{error}</div>}
+    </div>
+  )
+}
+
 export function DutyObligationTab({
   characters,
   dutyTypes,
@@ -263,6 +339,8 @@ export function DutyObligationTab({
           </div>
         </div>
       )}
+
+      <XpHoldPanel partyObligation={characters.reduce((sum, c) => sum + (c.obligation_value ?? 0), 0)} />
 
       {/* ── Charts ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: SP[3] }}>

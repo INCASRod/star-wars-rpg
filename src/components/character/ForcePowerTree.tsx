@@ -1,5 +1,7 @@
 'use client'
 
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
+import { useXpHold } from '@/lib/xpSpendingFreeze'
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { MarkupText } from '@/components/ui/MarkupText'
 import { HUD, FS, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
@@ -251,6 +253,7 @@ function Plaque({
 export function ForcePowerTree({
   powerName, nodes, connections, onPurchase, xpAvailable, purchasedCount, totalCount, forceRating, previewMode,
 }: ForcePowerTreeProps) {
+  const xpHold = useXpHold()
   const [selectedNode, setSelectedNode] = useState<ForceTreeNode | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
@@ -410,7 +413,7 @@ export function ForcePowerTree({
     const affordable = xpAvailable === undefined || xpAvailable >= n.cost
     return {
       kind: 'purchase',
-      disabledReason: affordable ? undefined : `Not enough XP — need ${n.cost}, have ${xpAvailable}`,
+      disabledReason: xpHold.frozen ? 'Paused by the GM' : affordable ? undefined : `Not enough XP — need ${n.cost}, have ${xpAvailable}`,
       onConfirm: async () => {
         if (!onPurchase) return
         // Kill any live energy trace before the ceremony takes over — same
@@ -452,6 +455,7 @@ export function ForcePowerTree({
       borderRadius: RADIUS.lg,
       fontFamily: FONT_BODY,
     }}>
+      {!previewMode && <XpHoldBanner />}
       {/* Header */}
       <div style={{
         background: 'var(--hud-surface-lo)',

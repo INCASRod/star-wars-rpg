@@ -1,5 +1,6 @@
 'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
 import { useState, useRef, Fragment } from 'react'
 import gsap from 'gsap'
 import { C, panelBase } from './design-tokens'
@@ -1101,6 +1102,7 @@ export function ForcePanel({
   sessionTranquility = 0,
   onFlipBalancePoint,
 }: ForcePanelProps) {
+  const xpHold = useXpHold()
   // Lifted out of the individual card component (Primary Fix) — a single
   // "which power is expanded" value, not per-card local state, so the
   // drawer can render as one full-width grid sibling instead of nested
@@ -1167,7 +1169,9 @@ export function ForcePanel({
             </div>
             <button
               onClick={onPurchaseForceRating}
-              disabled={(xpAvailable ?? 0) < 10}
+              disabled={(xpAvailable ?? 0) < 10 || xpHold.frozen}
+              aria-label={xpHold.frozen ? 'Paused by the GM' : undefined}
+              title={xpHold.frozen ? 'Paused by the GM' : undefined}
               className="cursor-pointer force-browse-btn"
               style={{
                 border: `1px solid ${FORCE_BLUE_DIM}`,
@@ -1175,8 +1179,8 @@ export function ForcePanel({
                 fontFamily: FONT_BODY, fontSize: FS.label,
                 fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                 color: FORCE_BLUE,
-                opacity: (xpAvailable ?? 0) < 10 ? 0.4 : 1,
-                cursor: (xpAvailable ?? 0) < 10 ? 'not-allowed' : 'pointer',
+                opacity: (xpAvailable ?? 0) < 10 || xpHold.frozen ? 0.4 : 1,
+                cursor: (xpAvailable ?? 0) < 10 || xpHold.frozen ? 'not-allowed' : 'pointer',
               }}
             >
               Gain Force Rating 1 — 10 XP

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef, type Dispatch, type 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { xpSpendingBlocked } from '@/lib/xpSpendingFreeze'
+import { xpSpendingBlocked, persistXpDebit } from '@/lib/xpSpendingFreeze'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
@@ -102,9 +102,13 @@ export async function purchaseTalent(
   }
   const newXp = freshXp - cost
 
+  if (!(await persistXpDebit(supabase, character.id, { xp_available: newXp, ...statUpdates }))) {
+    setCharacter(character)
+    setTalents(prev => prev.filter(t => t.id !== newId))
+    return
+  }
   await Promise.all([
     supabase.from('character_talents').insert(talentRow),
-    supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
     supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought talent: ${talentKey} (row ${row})` }),
   ])
 
@@ -207,6 +211,11 @@ export async function purchaseForceAbility(
   }
   const newXp = freshXp - cost
 
+  if (!(await persistXpDebit(supabase, character.id, { xp_available: newXp }))) {
+    setCharacter(character)
+    setCharForceAbilities(prev => prev.filter(a => a.id !== newId))
+    return
+  }
   await Promise.all([
     supabase.from('character_force_abilities').insert({
       id:                newId,
@@ -217,7 +226,6 @@ export async function purchaseForceAbility(
       tree_col:          col,
       xp_cost:           cost,
     }),
-    supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
     supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought force ability: ${abilityKey}` }),
   ])
 
@@ -340,14 +348,18 @@ export async function buySpecialization(
     specialization_key: specKey, is_starting: false, purchase_order: existingCount,
   }
   setCharSpecs(prev => [...prev, newSpec])
-  setActiveSpecKey(specKey)
 
+  if (!(await persistXpDebit(supabase, character.id, { xp_available: newXp }))) {
+    setCharacter(character)
+    setCharSpecs(prev => prev.filter(s => s.id !== newSpec.id))
+    return
+  }
+  setActiveSpecKey(specKey)
   await Promise.all([
     supabase.from('character_specializations').insert({
       character_id: character.id, specialization_key: specKey,
       is_starting: false, purchase_order: existingCount,
     }),
-    supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
     supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought specialization: ${specKey}` }),
   ])
 
@@ -688,9 +700,13 @@ export function useCharacterData(characterId: string) {
     setCharacter({ ...character, xp_available: newXp })
     setSkills(prev => prev.map(s => s.skill_key === skillKey ? { ...s, rank: newRank } : s))
 
+    if (!(await persistXpDebit(supabase, character.id, { xp_available: newXp }))) {
+      setCharacter(character)
+      setSkills(prev => prev.map(s => s.skill_key === skillKey ? { ...s, rank: currentRank } : s))
+      return
+    }
     await Promise.all([
       supabase.from('character_skills').update({ rank: newRank }).eq('character_id', character.id).eq('skill_key', skillKey),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought skill rank: ${skillKey} ${newRank}` }),
     ])
 
@@ -1204,10 +1220,11 @@ export function useCharacterData(characterId: string) {
     const newXp = character.xp_available - cost
     setCharacter({ ...character, xp_available: newXp, force_rating_purchased: true })
 
-    await Promise.all([
-      supabase.from('characters').update({ xp_available: newXp, force_rating_purchased: true }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: 'Gained Force Rating 1' }),
-    ])
+    if (!(await persistXpDebit(supabase, character.id, { xp_available: newXp, force_rating_purchased: true }))) {
+      setCharacter(character)
+      return
+    }
+    await supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: 'Gained Force Rating 1' })
 
     toast.success('Force Rating 1 gained!')
   }

@@ -1,5 +1,7 @@
 'use client'
 
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
+import { useXpHold } from '@/lib/xpSpendingFreeze'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TalentTree, type TalentTreeNode, type TalentTreeConnection } from './TalentTree'
@@ -106,6 +108,7 @@ export function TalentSurface({
 
   return (
     <div className={flashActive ? 'sig-lockin-flash' : undefined}>
+      {!previewMode && <XpHoldBanner />}
       {contentView === 'tree' ? (
         // marginBottom reserves room for a bottom-row plaque's hover expansion
         // (Prompt 7b, Defect 2). RE-MEASURED for the tree-first pass, not
@@ -454,6 +457,7 @@ function SigNodeGrid({
   onLockIn?: (sigAbilityKey: string) => void | Promise<void>
   xpAvailable?: number
 }) {
+  const xpHold = useXpHold()
   const upgradeNodes = nodes.filter(n => n.rowIndex > 0)
   const containerRef = useRef<HTMLDivElement>(null)
   // Carries whichever visual state ('purchased'/'available'/'locked') was
@@ -564,7 +568,7 @@ function SigNodeGrid({
       if (state === 'purchased') return { kind: 'owned' }
       return {
         kind: 'lockIn',
-        disabledReason: hasUnlockedTier5 ? undefined : 'Only available when Tier 5 talents are unlocked in this specialisation.',
+        disabledReason: xpHold.frozen ? 'Paused by the GM' : hasUnlockedTier5 ? undefined : 'Only available when Tier 5 talents are unlocked in this specialisation.',
         onConfirm: () => onLockIn?.(sigAbilityKey),
       }
     }
@@ -595,6 +599,7 @@ function SigNodeGrid({
     }
     return {
       kind: 'purchase',
+      disabledReason: xpHold.frozen ? 'Paused by the GM' : undefined,
       onConfirm: async () => {
         if (!onPurchaseNode) return
         setHoveredKey(null) // kill any live energy trace before the ceremony takes over

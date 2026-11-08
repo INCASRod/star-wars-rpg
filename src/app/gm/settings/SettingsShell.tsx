@@ -2,16 +2,12 @@
 
 import { useState } from 'react'
 import { PlayersAndInvites } from './PlayersAndInvites'
-import { XpSpending } from './XpSpending'
 import styles from './settings.module.css'
 
 interface Section { id: string; label: string }
 
-// Future home of account, campaign settings and membership.
-const SECTIONS: Section[] = [
-  { id: 'players', label: 'Players and invites' },
-  { id: 'xp', label: 'XP spending' },
-]
+// Future home of account, campaign settings and membership. Only one section exists today.
+const SECTIONS: Section[] = [{ id: 'players', label: 'Players and invites' }]
 
 export function SettingsShell({ campaignId }: { campaignId: string | null }) {
   const [active, setActive] = useState(SECTIONS[0].id)
@@ -39,7 +35,6 @@ export function SettingsShell({ campaignId }: { campaignId: string | null }) {
         </nav>
         <section className={styles.content}>
           {active === 'players' && <PlayersAndInvites campaignId={campaignId} />}
-          {active === 'xp' && <XpSpending />}
         </section>
       </div>
     </main>

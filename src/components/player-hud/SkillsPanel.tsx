@@ -1,5 +1,7 @@
 ﻿'use client'
 
+import { useXpHold } from '@/lib/xpSpendingFreeze'
+import { XpHoldBanner } from '@/components/player/XpHoldNotice'
 import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, panelBase, type CharKey } from './design-tokens'
 import { FONT_BODY, FONT_MONO, FS, RADIUS, EASE, SP } from '@/lib/tokens'
@@ -303,6 +305,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const [skillSearch, setSkillSearch] = useState('')
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { isOpen } = useHudPanelContext()
+  const xpHold = useXpHold()
 
   useEffect(() => { setSkillSearch('') }, [characterId])
 
@@ -366,6 +369,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   })).filter(g => g.skills.length > 0)
 
   const handleSkillClick = (skill: HudSkill) => {
+    if (xpHold.frozen) return
     startConfirm(skill.key)
   }
 
@@ -456,6 +460,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <XpHoldBanner />
       {/* Controls — filter pills | separator | view toggle | XP + mode */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: SP[3],
@@ -525,7 +530,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
             color: C.textFaint,
             letterSpacing: '0.08em',
           }}>
-            {isCombat ? 'Click a skill to roll' : 'Click a skill to upgrade it'}
+            {isCombat ? 'Click a skill to roll' : xpHold.frozen ? 'Upgrades paused by the GM' : 'Click a skill to upgrade it'}
           </span>
         </div>
       </div>
