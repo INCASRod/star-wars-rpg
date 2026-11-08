@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import { getRefData } from '@/lib/refDataCache'
 import { randomUUID } from '@/lib/utils'
+import { xpSpendingBlocked } from '@/lib/xpSpendingFreeze'
 import type { SigAbility, SigAbilityNode, LockedSigAbility, CharacterSigAbilityNode } from '@/lib/types'
 
 const TIER_5_XP_COST = 25
@@ -168,6 +169,7 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     if (!baseNode) throw new Error(`No base node found for signature ability ${sigAbilityKey}`)
 
     const supabase = createClient()
+    if (await xpSpendingBlocked(supabase)) return
     const id = randomUUID()
     const purchasedAt = new Date().toISOString()
 
@@ -197,6 +199,7 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     }
 
     const supabase = createClient()
+    if (await xpSpendingBlocked(supabase)) return
     const id = randomUUID()
     const purchasedAt = new Date().toISOString()
 

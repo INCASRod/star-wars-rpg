@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef, type Dispatch, type 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { xpSpendingBlocked } from '@/lib/xpSpendingFreeze'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
@@ -74,6 +75,7 @@ export async function purchaseTalent(
   const { character, talents, refTalentMap, supabase, setCharacter, setTalents } = deps
   const cost = (row + 1) * 5
   if (character.xp_available < cost) return
+  if (await xpSpendingBlocked(supabase)) return
 
   const statUpdates = applyTalentModifiers(character, refTalentMap, talentKey, 1)
   const optimisticXp = character.xp_available - cost
@@ -182,6 +184,7 @@ export async function purchaseForceAbility(
   // gained a Force-sensitive specialization only makes them eligible, it does
   // not grant a rating on its own. Enforced here (not just in the UI).
   if (forceRating < 1) { toast.error('Force Rating 1 required to purchase Force powers'); return }
+  if (await xpSpendingBlocked(supabase)) return
 
   const newId = randomUUID()
   const optimisticXp = character.xp_available - cost
@@ -328,6 +331,7 @@ export async function buySpecialization(
     toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
     return
   }
+  if (await xpSpendingBlocked(supabase)) return
 
   const newXp = character.xp_available - cost
   setCharacter({ ...character, xp_available: newXp })
@@ -678,6 +682,7 @@ export function useCharacterData(characterId: string) {
     if (newRank > 5) return
     const cost = newRank * 5 + (isCareer ? 0 : 5)
     if (character.xp_available < cost) return
+    if (await xpSpendingBlocked(supabase)) return
 
     const newXp = character.xp_available - cost
     setCharacter({ ...character, xp_available: newXp })
@@ -1194,6 +1199,7 @@ export function useCharacterData(characterId: string) {
       toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
       return
     }
+    if (await xpSpendingBlocked(supabase)) return
     markSelf()
     const newXp = character.xp_available - cost
     setCharacter({ ...character, xp_available: newXp, force_rating_purchased: true })
