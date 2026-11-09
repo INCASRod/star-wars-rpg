@@ -9,6 +9,7 @@ import { useIsMobile }                from '@/hooks/useIsMobile'
 import { useCharacterAccess }         from '@/hooks/useCharacterAccess'
 import { ViewModeProvider }           from '@/contexts/ViewModeContext'
 import { CharacterPreview }           from '@/components/preview/CharacterPreview'
+import { RecapModal } from '@/components/player/RecapNotice'
 import { XpHoldModal }                from '@/components/player/XpHoldNotice'
 
 export default function CharacterPage() {
@@ -47,7 +48,7 @@ function CharacterPageInner() {
           characterId={characterId}
           campaignId={campaignId}
         />
-        {access.mode === 'owner' && <XpHoldModal />}
+        {access.mode === 'owner' && <><XpHoldModal /><RecapModal /></>}
       </ViewModeProvider>
     )
   }
@@ -59,7 +60,7 @@ function CharacterPageInner() {
         isGmMode={isGmMode}
         campaignId={campaignId}
       />
-      {access.mode === 'owner' && <XpHoldModal />}
+      {access.mode === 'owner' && <><XpHoldModal /><RecapModal /></>}
     </ViewModeProvider>
   )
 }

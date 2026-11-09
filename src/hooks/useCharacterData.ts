@@ -468,6 +468,8 @@ export function useCharacterData(characterId: string) {
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // True when the private-text read (backstory) failed: the editor is withheld rather than seeded blank.
+  const [privateLoadError, setPrivateLoadError] = useState(false)
   const [moralitySystem, setMoralitySystem] = useState<MoralitySystem | null>(null)
   const [moralitySystemError, setMoralitySystemError] = useState<string | null>(null)
   // Optional post-purchase prompt offering the deliberate Force Rating buy —
@@ -493,7 +495,7 @@ export function useCharacterData(characterId: string) {
         charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
         refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-        refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes,
+        refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes, privateRes,
       } = await (consumeCharacterDataPrefetch(characterId) ?? fetchCharacterDataBatch(characterId))
 
       setMoralitySystem(ms)
@@ -502,6 +504,7 @@ export function useCharacterData(characterId: string) {
       if (charRes.error) throw new Error(charRes.error.message)
 
       setCharacter(charRes.data as Character)
+      setPrivateLoadError(!!privateRes.error)
       setSkills((skillsRes.data as CharacterSkill[]) || [])
       setTalents((talentsRes.data as CharacterTalent[]) || [])
       setWeapons((weaponsRes.data as CharacterWeapon[]) || [])
@@ -1177,18 +1180,14 @@ export function useCharacterData(characterId: string) {
     await cancelDedication(talentMutationDeps(), talentId, xpCost)
   }
 
-  const handleBackstoryChange = async (newBackstory: string) => {
-    if (!character) return
+  /** Resolves true only when the write succeeded. Functional state update so no other field is ever reverted. */
+  const handleBackstoryChange = async (newBackstory: string): Promise<boolean> => {
+    if (!character) return false
     markSelf()
-    setCharacter({ ...character, backstory: newBackstory })
-    await supabase.from('character_private').upsert({ character_id: character.id, backstory: newBackstory, updated_at: new Date().toISOString() })
-  }
-
-  const handleNotesChange = async (newNotes: string) => {
-    if (!character) return
-    markSelf()
-    setCharacter({ ...character, notes: newNotes })
-    await supabase.from('character_private').upsert({ character_id: character.id, notes: newNotes, updated_at: new Date().toISOString() })
+    const { error } = await supabase.from('character_private').upsert({ character_id: character.id, backstory: newBackstory, updated_at: new Date().toISOString() })
+    if (error) { toast.error('Backstory not saved'); return false }
+    setCharacter(prev => (prev ? { ...prev, backstory: newBackstory } : prev))
+    return true
   }
 
   const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {
@@ -1579,7 +1578,8 @@ export function useCharacterData(characterId: string) {
     handleCancelDedication,
     handleCreditSpend,
     handleBackstoryChange,
-    handleNotesChange,
+    privateLoadError,
+    reloadCharacter: () => loadCharacter(true),
     handlePurchaseForceAbility,
     handlePurchaseForceRating,
     handleBuySpecialization,

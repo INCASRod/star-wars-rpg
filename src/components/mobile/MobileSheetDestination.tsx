@@ -12,6 +12,9 @@ import type { BalancePointState } from '@/lib/forceUtils'
 import { CHAR_COLOR, type CharKey } from '@/lib/tokens'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { MobileForcePresenceEditor } from './MobileForcePresenceEditor'
+import { NotesPanel } from '@/components/player/NotesDrawer'
+import { useViewMode } from '@/contexts/ViewModeContext'
+import { HUD_MOBILE, FONT_BODY, FS, SP, RADIUS } from '@/lib/tokens'
 
 const CHARACTERISTICS: { key: CharKey; label: string }[] = [
   { key: 'brawn',     label: 'Brawn' },
@@ -202,6 +205,9 @@ export function MobileSheetDestination({
   moralitySystem, moralitySystemError, conflicts, onFlipBalancePoint, onOpenVitalAdjust,
 }: MobileSheetDestinationProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
+  // Private notes: owner only, opened from the Lore section, full height inside this destination.
+  const { mode: viewMode } = useViewMode()
+  const [notesOpen, setNotesOpen] = useState(false)
 
   const dutyResolvedName = character.duty_type ? resolveDutyName(character, refDutyTypes) : null
   const obligationResolvedName = character.obligation_type ? resolveObligationName(character, refObligationTypes) : null
@@ -232,6 +238,14 @@ export function MobileSheetDestination({
   const fpRef     = useEntranceRef<HTMLDivElement>(0.35, prefersReducedMotion)
   const woundBarRef  = useBarFillRef<HTMLSpanElement>(woundPct, 0.45, prefersReducedMotion)
   const strainBarRef = useBarFillRef<HTMLSpanElement>(strainPct, 0.45, prefersReducedMotion)
+
+  if (notesOpen && viewMode === 'owner') {
+    return (
+      <div className="m-sheet-page" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+        <NotesPanel characterId={character.id} onClose={() => setNotesOpen(false)} closeLabel="← Lore" />
+      </div>
+    )
+  }
 
   return (
     <div className="m-sheet-page">
@@ -367,6 +381,21 @@ export function MobileSheetDestination({
 
       {/* ── Lore ── */}
       <div className="m-sheet-section-label">Lore</div>
+      {viewMode === 'owner' && (
+        <button
+          type="button"
+          onClick={() => setNotesOpen(true)}
+          style={{
+            display: 'block', width: '100%', cursor: 'pointer', textAlign: 'center',
+            fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD_MOBILE.gold,
+            padding: `${SP[2]} ${SP[3]}`, marginBottom: SP[2], borderRadius: RADIUS.md,
+            background: 'color-mix(in srgb, var(--hud-mobile-gold) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--hud-mobile-gold) 40%, transparent)',
+          }}
+        >
+          ✎ Notes
+        </button>
+      )}
       {hasAnyLore ? (
         <>
           {speciesName && (

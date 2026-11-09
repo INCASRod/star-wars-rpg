@@ -5,6 +5,7 @@ import { isForceUserSensitive } from '@/lib/forceUtils'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
 import { RichText } from '@/components/ui/RichText'
 import { Modal } from '@/components/ui/Modal'
+import { useAutosave, SAVE_STATUS_TEXT } from '@/hooks/useCharacterNotes'
 import { FONT_BODY, FONT_DISPLAY, FONT_MONO, FS, SP, RADIUS, Z, HUD, EASE } from '@/lib/tokens'
 import type { Character, RefSpecies } from '@/lib/types'
 
@@ -17,8 +18,11 @@ interface HudLoreTabProps {
   refSpeciesAll: RefSpecies[]
   refDutyTypes: { key: string; name: string }[]
   refObligationTypes: { key: string; name: string }[]
-  onBackstoryChange: (val: string) => void
-  onNotesChange: (val: string) => void
+  /** Resolves true only when the write succeeded. */
+  onBackstoryChange: (val: string) => Promise<boolean>
+  /** True when the private text (backstory) failed to load: the editor is withheld so it can't be typed over real data. */
+  privateLoadError: boolean
+  onRetryPrivate: () => void
   onPortraitUpload: (file: File) => Promise<void>
   onPortraitDelete: () => Promise<void>
 }
@@ -27,17 +31,6 @@ interface HudLoreTabProps {
 function toTitleCase(s: string | undefined | null): string {
   if (!s) return '—'
   return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ')
-}
-
-function useDebounced(init: string, onSave: (v: string) => void) {
-  const [val, setVal] = useState(init)
-  const t = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const onChange = (v: string) => {
-    setVal(v)
-    if (t.current) clearTimeout(t.current)
-    t.current = setTimeout(() => onSave(v), 800)
-  }
-  return [val, onChange] as const
 }
 
 // count-up RAF hook — animates 0→target over duration ms with delay
@@ -257,16 +250,23 @@ function Pillar({
 export function HudLoreTab({
   character, careerName, speciesName, specNames,
   refDutyTypes, refObligationTypes,
-  onBackstoryChange, onNotesChange,
+  onBackstoryChange, privateLoadError, onRetryPrivate,
   onPortraitUpload, onPortraitDelete,
 }: HudLoreTabProps) {
   const isForceUser = isForceUserSensitive(character)
 
   // Text editing
   const [editingBackstory, setEditingBackstory] = useState(false)
-  const [editingNotes,     setEditingNotes]     = useState(false)
-  const [localBackstory,   handleBackstoryChange] = useDebounced(character.backstory || '', onBackstoryChange)
-  const [localNotes,       handleNotesChange]     = useDebounced(character.notes || '', onNotesChange)
+  const [localBackstory,   setLocalBackstory]   = useState(character.backstory || '')
+  const [backstoryBase,    setBackstoryBase]    = useState(character.backstory || '')
+  const backstorySave = useAutosave<string>(onBackstoryChange, 'saved')
+  // Fresh data (another device, a reload) replaces the editor text only while nothing here is unsaved,
+  // and never while the private load has failed (a blank seed must not be typed over real text).
+  if (!privateLoadError && !backstorySave.unsaved && (character.backstory || '') !== backstoryBase) {
+    setLocalBackstory(character.backstory || '')
+    setBackstoryBase(character.backstory || '')
+  }
+  const handleBackstoryChange = (v: string) => { setLocalBackstory(v); backstorySave.schedule(v) }
 
   // Duty/Obligation full-text expand
   const [expandedPillar, setExpandedPillar] = useState<'duty' | 'obligation' | null>(null)
@@ -652,14 +652,29 @@ export function HudLoreTab({
                       background: 'var(--hud-gold)', opacity: 0.4,
                     }} />
                   </div>
-                  <button
-                    className="lore-edit-btn"
-                    onClick={() => setEditingBackstory(e => !e)}
-                  >
-                    {editingBackstory ? 'Preview' : 'Edit'}
-                  </button>
+                  {!privateLoadError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+                      {editingBackstory && (
+                        <button className="lore-edit-btn" onClick={() => void backstorySave.flush()}>Save</button>
+                      )}
+                      <button
+                        className="lore-edit-btn"
+                        onClick={() => {
+                          if (editingBackstory) void backstorySave.flush()
+                          setEditingBackstory(e => !e)
+                        }}
+                      >
+                        {editingBackstory ? 'Done' : 'Edit'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {editingBackstory ? (
+                {privateLoadError ? (
+                  <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: SP[2], alignItems: 'flex-start', fontFamily: FONT_BODY, fontSize: FS.sm, color: 'var(--state-warning)' }}>
+                    <span>Could not load your backstory. Nothing has been changed.</span>
+                    <button className="lore-edit-btn" onClick={onRetryPrivate}>Retry</button>
+                  </div>
+                ) : editingBackstory ? (
                   <>
                     <textarea
                       value={localBackstory}
@@ -673,7 +688,7 @@ export function HudLoreTab({
                       fontFamily: FONT_BODY, fontSize: FS.overline,
                       color: 'var(--hud-text-faint)',
                       marginTop: SP[1], textAlign: 'right', letterSpacing: '0.06em',
-                    }}>Auto-saves on pause</div>
+                    }} role="status">{SAVE_STATUS_TEXT[backstorySave.status]}</div>
                   </>
                 ) : localBackstory ? (
                   <div
@@ -751,49 +766,6 @@ export function HudLoreTab({
                   </div>
                 </div>
               )}
-
-              {/* ─ Notes ─ */}
-              <div style={{ flexShrink: 0, paddingTop: SP[2], borderTop: `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)` }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center',
-                  justifyContent: 'space-between', marginBottom: SP[1],
-                }}>
-                  <div style={{ display:'flex', alignItems:'center', gap: SP[2] }}>
-                    <div style={{ width: SP[3], height:'1px', background:'var(--hud-gold)', opacity:0.4 }} />
-                    <span style={{
-                      fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-                      letterSpacing: '0.2em', textTransform: 'uppercase',
-                      color: HUD.gold,
-                    }}>Notes</span>
-                    <div style={{ width: SP[3], height:'1px', background:'var(--hud-gold)', opacity:0.4 }} />
-                  </div>
-                  <button
-                    className="lore-edit-btn"
-                    onClick={() => setEditingNotes(e => !e)}
-                  >
-                    {editingNotes ? 'Done' : 'Edit'}
-                  </button>
-                </div>
-                {editingNotes ? (
-                  <textarea
-                    value={localNotes}
-                    onChange={e => handleNotesChange(e.target.value)}
-                    placeholder="Session notes, reminders, contacts, safehouses…"
-                    className="hud-textarea"
-                    style={{ minHeight: '4rem', resize: 'vertical' as const }}
-                  />
-                ) : (
-                  <div className="lore-narrative-text" style={{
-                    fontFamily: FONT_BODY, fontSize: FS.sm,
-                    color: 'var(--hud-text-dim)',
-                  }}>
-                    {localNotes
-                      ? localNotes
-                      : <span style={{ fontStyle: 'italic' }}>No notes recorded.</span>
-                    }
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Hidden file input */}

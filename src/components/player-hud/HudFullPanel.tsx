@@ -16,10 +16,14 @@ interface HudFullPanelProps {
    * later prompt. */
   iconSrc?: string
   onClose:  () => void
+  /** Optional control in the header, between the title and the close button. Absent = header unchanged. */
+  headerAction?: React.ReactNode
+  /** Optional layer docked over the panel (e.g. the Lore notes drawer). Absent = panel unchanged. */
+  overlay?: React.ReactNode
   children: React.ReactNode
 }
 
-export function HudFullPanel({ open, title, symbol, iconSrc, onClose, children }: HudFullPanelProps) {
+export function HudFullPanel({ open, title, symbol, iconSrc, onClose, headerAction, overlay, children }: HudFullPanelProps) {
   const rootRef = useRef<HTMLDivElement>(null)
 
   // Set data-ticker-pass="true" on the root div whenever the panel opens.
@@ -72,6 +76,7 @@ export function HudFullPanel({ open, title, symbol, iconSrc, onClose, children }
         }}>
           <TickerText text={title} isOpen={open} delayMs={80} />
         </span>
+        {headerAction}
         <button
           onClick={onClose}
           style={{
@@ -90,6 +95,7 @@ export function HudFullPanel({ open, title, symbol, iconSrc, onClose, children }
           {children}
         </HudPanelContext.Provider>
       </div>
+      {overlay}
     </div>
   )
 }

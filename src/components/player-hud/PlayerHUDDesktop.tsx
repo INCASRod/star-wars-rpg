@@ -21,6 +21,8 @@ import { MarketStorefront } from './MarketStorefront'
 import { HudForceTab } from './HudForceTab'
 import { HudInventoryTab } from './HudInventoryTab'
 import { HudLoreTab } from './HudLoreTab'
+import { NotesDrawer } from '@/components/player/NotesDrawer'
+import { useViewMode } from '@/contexts/ViewModeContext'
 import { HudSkillsTab } from './HudSkillsTab'
 import { HudRightColumn } from './HudRightColumn'
 import { HudStatusStrip } from './HudStatusStrip'
@@ -88,7 +90,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
     handleHealCrit, handlePortraitUpload, handlePortraitDelete,
     handleRemoveWeapon, handleRemoveEquipment,
-    handleCreditSpend, handleBackstoryChange, handleNotesChange,
+    handleCreditSpend, handleBackstoryChange, privateLoadError, reloadCharacter,
     handlePurchaseForceAbility, handlePurchaseForceRating, handleBuySpecialization, handleBuySkill,
   } = useCharacterData(characterId)
 
@@ -195,6 +197,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── UI State ──
   const [activeQuickPanel, setActiveQuickPanel] = useState<'skill' | null>(null)
   const [activeFullPanel,  setActiveFullPanel]  = useState<'skills' | 'talents' | 'force-panel' | 'inventory' | 'lore' | 'group' | null>(null)
+  // Private notes drawer (owner only). Only shown while the Lore panel is open; closing either unmounts it, which flushes unsaved text.
+  const { mode: viewMode } = useViewMode()
+  const [notesOpen,        setNotesOpen]        = useState(false)
   const [diceOpen,         setDiceOpen]         = useState(false)
   const [adversariesOpen,  setAdversariesOpen]  = useState(false)
   // Reset/Lock live in the vitals bar now; the map exposes them through this handle.
@@ -805,7 +810,19 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             />
           </HudFullPanel>
 
-          <HudFullPanel open={activeFullPanel === 'lore'} title="Lore" symbol="✧" onClose={() => setActiveFullPanel(null)}>
+          <HudFullPanel
+            open={activeFullPanel === 'lore'} title="Lore" symbol="✧" onClose={() => setActiveFullPanel(null)}
+            headerAction={viewMode === 'owner' ? (
+              <button
+                type="button" className="lore-edit-btn" onClick={() => setNotesOpen(o => !o)} aria-expanded={notesOpen}
+              >
+                ✎ Notes
+              </button>
+            ) : undefined}
+            overlay={viewMode === 'owner' ? (
+              <NotesDrawer open={notesOpen && activeFullPanel === 'lore'} characterId={character.id} onClose={() => setNotesOpen(false)} />
+            ) : undefined}
+          >
             <HudLoreTab
               character={character}
               careerName={careerName}
@@ -815,7 +832,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               refDutyTypes={refDutyTypes}
               refObligationTypes={refObligationTypes}
               onBackstoryChange={handleBackstoryChange}
-              onNotesChange={handleNotesChange}
+              privateLoadError={privateLoadError}
+              onRetryPrivate={reloadCharacter}
               onPortraitUpload={handlePortraitUpload}
               onPortraitDelete={handlePortraitDelete}
             />
