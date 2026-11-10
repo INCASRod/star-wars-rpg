@@ -120,6 +120,7 @@
 ### `useSessionRollState(campaignId)`
 - Manages session Duty/Obligation roll state from `session_roll_state` table
 - State: `duty_roll`, `duty_triggered`, `obligation_roll`, `obligation_triggered`, etc.
+- Range tables: `buildRangeTable` in `src/components/gm/SessionRollSimulator.tsx` (Duty and Obligation share it). Party total <= 100 gives raw cumulative ranges; over 100 each range is scaled to fit the d100 by largest remainder (ties keep table order), ending at exactly 100. `(+N)` values and the party total stay real. An empty scaled range renders `-`.
 - Provides computed bonus: per-character wound threshold bonus from Duty activation
 
 ### `useRollFeed(campaignId)`

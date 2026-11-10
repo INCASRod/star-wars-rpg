@@ -35,7 +35,7 @@ interface RangeEntry {
   rangeHigh: number
 }
 
-function buildRangeTable(
+export function buildRangeTable(
   chars: Character[],
   field: 'duty_value' | 'obligation_value',
   resolveTypeName?: (c: Character) => string,
@@ -43,15 +43,30 @@ function buildRangeTable(
   const sorted = [...chars]
     .filter(c => (c[field] ?? 0) > 0)
     .sort((a, b) => (b[field] ?? 0) - (a[field] ?? 0))
+  const total = sorted.reduce((s, c) => s + (c[field] ?? 0), 0)
+
+  // Range width per character. Party total <= 100: the raw value. Over 100: scale to fit the d100
+  // by largest remainder (ties keep table order), so ranges are contiguous and end at exactly 100.
+  let widths = sorted.map(c => c[field] ?? 0)
+  if (total > 100) {
+    const exact = widths.map(v => (v * 100) / total)
+    widths = exact.map(Math.floor)
+    const leftover = 100 - widths.reduce((s, w) => s + w, 0)
+    exact
+      .map((x, i) => ({ i, frac: x - Math.floor(x) }))
+      .sort((a, b) => b.frac - a.frac || a.i - b.i)
+      .slice(0, leftover)
+      .forEach(({ i }) => { widths[i] += 1 })
+  }
+
   let cursor = 0
-  return sorted.map(c => {
-    const val = c[field] ?? 0
+  return sorted.map((c, i) => {
     const entry: RangeEntry = {
-      characterId: c.id, characterName: c.name, value: val,
-      rangeLow: cursor + 1, rangeHigh: cursor + val,
+      characterId: c.id, characterName: c.name, value: c[field] ?? 0,
+      rangeLow: cursor + 1, rangeHigh: cursor + widths[i],
       typeName: resolveTypeName ? resolveTypeName(c) : undefined,
     }
-    cursor += val
+    cursor += widths[i]
     return entry
   })
 }
@@ -223,7 +238,7 @@ function RangeTable({ entries, color }: { entries: RangeEntry[]; color: string }
         }}>
           <span style={{ color: TEXT }}>{e.characterName}</span>
           <span style={{ color }}>
-            {e.rangeLow === e.rangeHigh ? e.rangeLow : `${e.rangeLow}–${e.rangeHigh}`}
+            {e.rangeHigh < e.rangeLow ? '-' : e.rangeLow === e.rangeHigh ? e.rangeLow : `${e.rangeLow}–${e.rangeHigh}`}
             <span style={{ color: DIM, marginLeft: '0.375rem' }}>(+{e.value})</span>
           </span>
         </div>
