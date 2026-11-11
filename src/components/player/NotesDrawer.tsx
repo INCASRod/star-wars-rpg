@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCharacterNotes, useAutosave, SAVE_STATUS_TEXT, type CharacterNote, type NoteType } from '@/hooks/useCharacterNotes'
 import { usePlayerRecaps, type PlayerRecap } from '@/hooks/usePlayerRecaps'
 import { RecapReader } from '@/components/player/RecapNotice'
@@ -37,6 +37,46 @@ const inputBase = {
   fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, background: HUD.surfaceLo,
   border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[2]}`,
   outline: 'none', boxSizing: 'border-box' as const, minWidth: 0,
+}
+
+const GM_TIP = 'Only the player can write notes'
+
+/** Placeholder bar standing in for text the GM is not allowed to see (derived from an existing HUD token). */
+function RedactBar({ width, height = SP[2] }: { width: string; height?: string }) {
+  return <span aria-hidden style={{ display: 'block', width, height, borderRadius: RADIUS.sm, background: mix(HUD.textFaint, 28) }} />
+}
+
+/** GM view of one note: type + dates are real, title and text are bars. Nothing here can write. */
+function RedactedNoteView({ note, onBack }: { note: CharacterNote; onBack: () => void }) {
+  const t = TYPE_BY_KEY[note.type]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], padding: `${SP[2]} ${SP[3]}`, borderBottom: `1px solid ${HUD.border}` }}>
+        <button type="button" onClick={onBack} style={btnBase}>← Notes</button>
+        <span style={{ flex: 1, minWidth: 0, fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, textAlign: 'right' }}>Read only</span>
+        <button type="button" disabled title={GM_TIP} style={{ ...btnBase, opacity: 0.4, cursor: 'not-allowed' }}>Save</button>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: SP[3], padding: SP[3], flex: 1, minHeight: 0 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
+          {TYPES.map(x => (
+            <button
+              key={x.key} type="button" disabled title={GM_TIP}
+              style={{ ...btnBase, color: x.color, borderColor: mix(x.color, note.type === x.key ? 60 : 25), background: note.type === x.key ? mix(x.color, 12) : 'transparent', opacity: note.type === x.key ? 1 : 0.4, cursor: 'not-allowed' }}
+            >
+              <span aria-hidden>{x.glyph}</span> {x.label}
+            </button>
+          ))}
+        </div>
+        <div role="img" aria-label={`${t.label} note, contents hidden`} style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+          <RedactBar width="55%" height={SP[3]} />
+          <RedactBar width="100%" /><RedactBar width="92%" /><RedactBar width="97%" /><RedactBar width="64%" />
+        </div>
+        <div style={{ marginTop: 'auto', fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
+          Edited {fmtDate(note.updated_at)} · Created {fmtDate(note.created_at)}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function NoteEditor({ note, initialType, saveNote, deleteNote, remote, onBack }: {
@@ -137,23 +177,35 @@ function NoteEditor({ note, initialType, saveNote, deleteNote, remote, onBack }:
   )
 }
 
-export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { characterId: string; onClose: () => void; closeLabel?: string }) {
-  const { notes, loadState, retry, saveNote, deleteNote } = useCharacterNotes(characterId)
+export function NotesPanel({ characterId, onClose, closeLabel = '✕', gm = false }: { characterId: string; onClose: () => void; closeLabel?: string; gm?: boolean }) {
+  const { notes, loadState, retry, reload, saveNote, deleteNote } = useCharacterNotes(characterId, gm)
   const { recaps, unseen, markSeen } = usePlayerRecaps()
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<{ key: string; id: string | null; type: NoteType } | null>(null)
   const [reading, setReading] = useState<PlayerRecap | null>(null)
 
-  const openRecap = (r: PlayerRecap) => { setReading(r); if (r === recaps[0]) markSeen(r.session_id) }
+  const openRecap = (r: PlayerRecap) => { setReading(r); if (!gm && r === recaps[0]) markSeen(r.session_id) }
+
+  // GM has no realtime: re-read the metadata each time the list comes back into view (the first read is the hook's).
+  const wasEditing = useRef(false)
+  useEffect(() => {
+    if (gm && wasEditing.current && !editing) reload()
+    wasEditing.current = !!editing
+  }, [gm, editing, reload])
 
   const q = query.trim().toLowerCase()
   const rows: Row[] = [
     ...(filter === 'recap' ? [] : notes.filter(n => filter === 'all' || n.type === filter).map(note => ({ kind: 'note' as const, note, at: note.updated_at }))),
     ...(filter === 'all' || filter === 'recap' ? recaps.map(recap => ({ kind: 'recap' as const, recap, at: recap.shared_at })) : []),
   ]
-    .filter(r => !q || (r.kind === 'note' ? `${r.note.title} ${r.note.body}` : `${r.recap.title} ${r.recap.summary}`).toLowerCase().includes(q))
+    .filter(r => gm || !q || (r.kind === 'note' ? `${r.note.title} ${r.note.body}` : `${r.recap.title} ${r.recap.summary}`).toLowerCase().includes(q))
     .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
+
+  if (editing && gm) {
+    const gmNote = notes.find(n => n.id === editing.id)
+    if (gmNote) return <RedactedNoteView note={gmNote} onBack={() => setEditing(null)} />
+  }
 
   if (editing) {
     const current = editing.id ? notes.find(n => n.id === editing.id) ?? null : null
@@ -183,7 +235,7 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
       <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], padding: `${SP[2]} ${SP[3]}`, borderBottom: `1px solid ${HUD.border}` }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>Notes</div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>Only you can see these</div>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>{gm ? "Private: you can see the notes, not what's written." : 'Only you can see these'}</div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close notes" style={btnBase}>{closeLabel}</button>
       </div>
@@ -193,9 +245,9 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: SP[1] }}>
           {TYPES.map(t => (
             <button
-              key={t.key} type="button" disabled={loadState !== 'ready'}
+              key={t.key} type="button" disabled={gm || loadState !== 'ready'} title={gm ? GM_TIP : undefined}
               onClick={() => setEditing({ key: `new-${Date.now()}`, id: null, type: t.key })}
-              style={{ ...btnBase, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1], color: t.color, borderColor: mix(t.color, 40), opacity: loadState === 'ready' ? 1 : 0.5 }}
+              style={{ ...btnBase, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1], color: t.color, borderColor: mix(t.color, 40), opacity: !gm && loadState === 'ready' ? 1 : 0.5, cursor: gm ? 'not-allowed' : 'pointer' }}
             >
               <span aria-hidden style={{ fontSize: FS.h4 }}>{t.glyph}</span>
               <span style={{ fontSize: FS.overline }}>{t.label}</span>
@@ -215,7 +267,7 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
               </span>
               <span style={{ display: 'block', fontSize: FS.overline, fontWeight: 400, color: HUD.textDim }}>Latest recap from the GM · tap to read</span>
             </span>
-            {unseen && <span style={{ fontSize: FS.overline, color: HUD.gold, border: `1px solid ${mix(HUD.gold, 50)}`, borderRadius: RADIUS.sm, padding: `0 ${SP[1]}` }}>NEW</span>}
+            {!gm && unseen && <span style={{ fontSize: FS.overline, color: HUD.gold, border: `1px solid ${mix(HUD.gold, 50)}`, borderRadius: RADIUS.sm, padding: `0 ${SP[1]}` }}>NEW</span>}
           </button>
         )}
 
@@ -225,6 +277,7 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
           {filterBtn('recap', 'Recaps', RECAP_GLYPH)}
           <input
             value={query} onChange={e => setQuery(e.target.value)} placeholder="Search" aria-label="Search notes"
+            disabled={gm} title={gm ? GM_TIP : undefined}
             style={{ ...inputBase, flex: 1, minWidth: '6rem' }}
           />
         </div>
@@ -254,10 +307,16 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
                   style={{ ...btnBase, display: 'flex', alignItems: 'center', gap: SP[2], textAlign: 'left', padding: SP[2], fontWeight: 400 }}
                 >
                   <span aria-hidden style={{ color, fontSize: FS.h4, flexShrink: 0 }}>{isNote ? TYPE_BY_KEY[r.note.type].glyph : RECAP_GLYPH}</span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: FS.sm, fontWeight: 700, color: HUD.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
-                    <span style={{ display: 'block', fontSize: FS.overline, color: HUD.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preview}</span>
-                  </span>
+                  {gm && isNote ? (
+                    <span aria-label="Note, contents hidden" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+                      <RedactBar width="60%" /><RedactBar width="85%" height={SP[1]} />
+                    </span>
+                  ) : (
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: FS.sm, fontWeight: 700, color: HUD.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+                      <span style={{ display: 'block', fontSize: FS.overline, color: HUD.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preview}</span>
+                    </span>
+                  )}
                   <span style={{ fontSize: FS.overline, color: HUD.textFaint, flexShrink: 0 }}>{fmtDate(r.at)}</span>
                 </button>
               )
@@ -272,7 +331,7 @@ export function NotesPanel({ characterId, onClose, closeLabel = '✕' }: { chara
 }
 
 /** Desktop: docked to the right side of the Lore panel. Unmounts when closed, which flushes any pending note text. */
-export function NotesDrawer({ open, characterId, onClose }: { open: boolean; characterId: string; onClose: () => void }) {
+export function NotesDrawer({ open, characterId, onClose, gm = false }: { open: boolean; characterId: string; onClose: () => void; gm?: boolean }) {
   if (!open) return null
   return (
     <aside
@@ -284,7 +343,7 @@ export function NotesDrawer({ open, characterId, onClose }: { open: boolean; cha
         boxShadow: `0 0 ${SP[6]} color-mix(in srgb, var(--hud-bg) 60%, transparent)`,
       }}
     >
-      <NotesPanel characterId={characterId} onClose={onClose} />
+      <NotesPanel characterId={characterId} onClose={onClose} gm={gm} />
     </aside>
   )
 }

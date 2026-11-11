@@ -116,12 +116,26 @@ function byNewest(a: CharacterNote, b: CharacterNote) {
   return a.updated_at < b.updated_at ? 1 : a.updated_at > b.updated_at ? -1 : 0
 }
 
-export function useCharacterNotes(characterId: string) {
+/**
+ * `gm` = the GM's redacted view (Notes B3). The GM's client NEVER touches `character_notes`: the list comes from the
+ * `gm_character_note_meta` function (id, type, dates only), title/body stay '' here, there is no realtime
+ * subscription (RLS would block it), and saveNote/deleteNote refuse. The caller re-reads with `reload`.
+ */
+export function useCharacterNotes(characterId: string, gm = false) {
   const [notes, setNotes] = useState<CharacterNote[]>([])
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
 
   /** Read the list; a failed read leaves the last good list in place (and the error state if there never was one). */
   const load = useCallback(() => {
+    if (gm) {
+      return Promise.resolve(createClient().rpc('gm_character_note_meta', { p_character_id: characterId }))
+        .then(({ data, error }) => {
+          if (error || !data) { setLoadState(s => (s === 'ready' ? s : 'error')); return }
+          setNotes((data as { id: string; type: NoteType; created_at: string; updated_at: string }[])
+            .map(m => ({ ...m, character_id: characterId, title: '', body: '' })))
+          setLoadState('ready')
+        })
+    }
     return createClient()
       .from('character_notes').select('*').eq('character_id', characterId).order('updated_at', { ascending: false })
       .then(({ data, error }) => {
@@ -129,9 +143,10 @@ export function useCharacterNotes(characterId: string) {
         setNotes(data as CharacterNote[])
         setLoadState('ready')
       })
-  }, [characterId])
+  }, [characterId, gm])
 
   useEffect(() => {
+    if (gm) { void load(); return }
     const supabase = createClient()
     const channel = supabase
       .channel(`character-notes-${characterId}`)
@@ -148,12 +163,13 @@ export function useCharacterNotes(characterId: string) {
       .subscribe(status => { if (status === 'SUBSCRIBED') void load() })
     void load().then(() => undefined)
     return () => { void supabase.removeChannel(channel) }
-  }, [characterId, load])
+  }, [characterId, load, gm])
 
   const retry = useCallback(() => { setLoadState('loading'); void load() }, [load])
 
   /** Insert (no id) or update (id) exactly title/body/type of one note. Returns the id on success. */
   const saveNote = useCallback(async (draft: NoteDraft): Promise<{ ok: boolean; id: string | null }> => {
+    if (gm) return { ok: false, id: null }
     const supabase = createClient()
     const fields = { type: draft.type, title: draft.title, body: draft.body }
     if (!draft.id) {
@@ -167,14 +183,17 @@ export function useCharacterNotes(characterId: string) {
     const row = data[0] as CharacterNote
     setNotes(prev => [row, ...prev.filter(n => n.id !== row.id)].sort(byNewest))
     return { ok: true, id: row.id }
-  }, [characterId])
+  }, [characterId, gm])
 
   const deleteNote = useCallback(async (id: string): Promise<boolean> => {
+    if (gm) return false
     const { data, error } = await createClient().from('character_notes').delete().eq('id', id).select('id')
     if (error || !data || data.length === 0) { toast.error('Note not deleted'); return false }
     setNotes(prev => prev.filter(n => n.id !== id))
     return true
-  }, [])
+  }, [gm])
 
-  return { notes, loadState, retry, saveNote, deleteNote }
+  const reload = useCallback(() => { void load() }, [load])
+
+  return { notes, loadState, retry, reload, saveNote, deleteNote }
 }

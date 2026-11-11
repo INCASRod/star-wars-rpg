@@ -239,10 +239,10 @@ export function MobileSheetDestination({
   const woundBarRef  = useBarFillRef<HTMLSpanElement>(woundPct, 0.45, prefersReducedMotion)
   const strainBarRef = useBarFillRef<HTMLSpanElement>(strainPct, 0.45, prefersReducedMotion)
 
-  if (notesOpen && viewMode === 'owner') {
+  if (notesOpen && (viewMode === 'owner' || viewMode === 'gm')) {
     return (
       <div className="m-sheet-page" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-        <NotesPanel characterId={character.id} onClose={() => setNotesOpen(false)} closeLabel="← Lore" />
+        <NotesPanel characterId={character.id} gm={viewMode === 'gm'} onClose={() => setNotesOpen(false)} closeLabel="← Lore" />
       </div>
     )
   }
@@ -381,7 +381,7 @@ export function MobileSheetDestination({
 
       {/* ── Lore ── */}
       <div className="m-sheet-section-label">Lore</div>
-      {viewMode === 'owner' && (
+      {(viewMode === 'owner' || viewMode === 'gm') && (
         <button
           type="button"
           onClick={() => setNotesOpen(true)}

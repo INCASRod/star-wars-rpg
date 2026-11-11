@@ -812,15 +812,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
           <HudFullPanel
             open={activeFullPanel === 'lore'} title="Lore" symbol="✧" onClose={() => setActiveFullPanel(null)}
-            headerAction={viewMode === 'owner' ? (
+            headerAction={viewMode === 'owner' || viewMode === 'gm' ? (
               <button
                 type="button" className="lore-edit-btn" onClick={() => setNotesOpen(o => !o)} aria-expanded={notesOpen}
               >
                 ✎ Notes
               </button>
             ) : undefined}
-            overlay={viewMode === 'owner' ? (
-              <NotesDrawer open={notesOpen && activeFullPanel === 'lore'} characterId={character.id} onClose={() => setNotesOpen(false)} />
+            overlay={viewMode === 'owner' || viewMode === 'gm' ? (
+              <NotesDrawer open={notesOpen && activeFullPanel === 'lore'} characterId={character.id} gm={viewMode === 'gm'} onClose={() => setNotesOpen(false)} />
             ) : undefined}
           >
             <HudLoreTab
