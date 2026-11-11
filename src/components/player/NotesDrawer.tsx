@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { useCharacterNotes, useAutosave, SAVE_STATUS_TEXT, type CharacterNote, type NoteType } from '@/hooks/useCharacterNotes'
 import { usePlayerRecaps, type PlayerRecap } from '@/hooks/usePlayerRecaps'
 import { RecapReader } from '@/components/player/RecapNotice'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE, Z } from '@/lib/tokens'
 
 /**
  * Private notes UI (owner only). `NotesDrawer` docks it to the right of the desktop Lore panel; `NotesPanel` is the
@@ -278,7 +278,7 @@ export function NotesDrawer({ open, characterId, onClose }: { open: boolean; cha
     <aside
       aria-label="Notes"
       style={{
-        position: 'absolute', top: 0, right: 0, bottom: 0, width: '21rem', maxWidth: '100%',
+        position: 'absolute', top: 0, right: 0, bottom: 0, width: '21rem', maxWidth: '100%', zIndex: Z.overlay,
         display: 'flex', flexDirection: 'column', minHeight: 0,
         background: HUD.panel, borderLeft: `1px solid ${HUD.borderHi}`,
         boxShadow: `0 0 ${SP[6]} color-mix(in srgb, var(--hud-bg) 60%, transparent)`,
