@@ -1,4 +1,5 @@
 import { CONFIG, type Config } from './config'
+import { clampedHours } from './rules'
 import type { Endpoint, Graph, GraphNode, Leg, Plan, RouteResult, Stop } from './types'
 
 const EPS = 1e-9
@@ -292,7 +293,7 @@ function jump(graph: Graph, a: Stop, b: Stop, uncharted: boolean, config: Config
 
 /**
  * The lane route and, when it pays, the hop route (lanes plus off-lane hops of <= hopMaxPx, fastest by time): offered when it uses some off-lane
- * AND saves >= hopSaveHours OR >= hopSaveShare of the lane time. Only when no lane route exists is the primary a straight jump.
+ * AND saves >= hopSaveHours OR >= hopSaveShare of the lane time (both times clamped to the band, E8). Only when no lane route exists is the primary a straight jump.
  */
 export function plan(graph: Graph, origin: Endpoint, destination: Endpoint, config: Config = CONFIG): Plan {
   let pins = 0
@@ -312,6 +313,8 @@ export function plan(graph: Graph, origin: Endpoint, destination: Endpoint, conf
   if (!primary.found && straight > 0) primary = jump(graph, a, b, pins > 0, config)
   const ratio = straight > 0 ? primary.lengthPx / straight : 1
   const hop = route(graph, origin, destination, 'hops', config)
-  const pays = hop.found && hop.share.off > 0 && (primary.hours - hop.hours >= config.hopSaveHours || hop.hours <= primary.hours * (1 - config.hopSaveShare))
+  const tp = clampedHours(primary, config)
+  const th = clampedHours(hop, config)
+  const pays = hop.found && hop.share.off > 0 && (tp - th >= config.hopSaveHours || th <= tp * (1 - config.hopSaveShare))
   return pays ? { primary, shortcut: hop, ratio } : { primary, ratio }
 }

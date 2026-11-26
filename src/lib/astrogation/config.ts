@@ -4,11 +4,11 @@
  */
 export const CONFIG = {
   /**
-   * Travel time. Hours per map pixel at hyperdrive class 1, by kind of leg. Derived from two anchors: open-space base 0.5085 h/px, major lanes 82%
-   * faster, minor lanes half the major cut (41% faster), off-lane 50% slower (zigzag, double back). Anchors: Kubindi - Formos 24 h (minor),
-   * Coruscant - Corellia 34 h (major). trip hours = sum(length x rate) x hyperdrive class.
+   * Travel time. Hours per map pixel at hyperdrive class 1, by kind of leg. Major 0.0909 and off-lane 0.763 as calibrated before E8 (open-space base
+   * 0.5085 h/px, major 82% faster, off-lane 50% slower). Minor = 2 x major (a minor lane is at most half as fast as a major one; E8, was 0.3).
+   * Route hours = sum(length x rate), then clamped to the Table 7-14 band (`bands[].minHours` / `maxHours`, see `clampedHours`), then x hyperdrive class.
    */
-  hoursPerPx: { major: 0.0909, minor: 0.3, off: 0.763 },
+  hoursPerPx: { major: 0.0909, minor: 0.1818, off: 0.763 },
   /** Hyperdrive classes a ship can have (a class multiplies the time). */
   hyperdriveClasses: [0.5, 1, 2, 3, 4],
 
@@ -58,12 +58,12 @@ export const CONFIG = {
     names: ['Simple', 'Easy', 'Average', 'Hard', 'Daunting', 'Formidable'],
   },
 
-  /** AoE Core Table 7-14 (hours / days / weeks, class 1 hyperdrive; other classes multiply it). */
+  /** AoE Core Table 7-14 (hours / days / weeks, class 1 hyperdrive; other classes multiply it). min/maxHours are the same range in hours; they clamp route time. */
   bands: [
-    { name: 'within a sector', time: '10 to 24 hours' },
-    { name: 'within a region', time: '10 to 72 hours' },
-    { name: 'between regions', time: '3 days to 1 week' },
-    { name: 'across the galaxy', time: '1 to 3 weeks' },
+    { name: 'within a sector', time: '10 to 24 hours', minHours: 10, maxHours: 24 },
+    { name: 'within a region', time: '10 to 72 hours', minHours: 10, maxHours: 72 },
+    { name: 'between regions', time: '3 days to 1 week', minHours: 72, maxHours: 168 },
+    { name: 'across the galaxy', time: '1 to 3 weeks', minHours: 168, maxHours: 504 },
   ],
   /**
    * "Across the galaxy" = straight-line distance between the two ends is at least this share of the galaxy's width (Sebastian, 2026-11-26).

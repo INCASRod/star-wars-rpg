@@ -91,12 +91,28 @@ export function formatTravelTime(hours: number): string {
   return rest ? `${unit(days, 'day')}, ${unit(rest, 'hour')}` : unit(days, 'day')
 }
 
+/** Share of the route's time spent off lanes (0 to 1). */
+function offTimeShare(r: RouteResult): number {
+  if (r.hours <= 0) return 0
+  return r.legs.reduce((s, l) => (l.kind === 'off' ? s + l.hours : s), 0) / r.hours
+}
+
 /**
- * ONE definite travel time: leg lengths x CONFIG.hoursPerPx at class 1, x the ship's hyperdrive class (0.5, 1, 2, 3, 4). The GM shifts it with
- * Advantage / Threat. `bandCheck` is the Table 7-14 band for the two ends, shown only as a sanity check.
+ * Route time at hyperdrive class 1, clamped to the Table 7-14 band of its two ends: never below the band minimum, never above the band maximum
+ * x (1 + off-lane share of the time). An all-lane trip never exceeds the band max; a half off-lane trip can reach 1.5 x max.
+ */
+export function clampedHours(route: RouteResult, config: Config = CONFIG): number {
+  if (!route.found) return route.hours
+  const band = config.bands[bandOf(route, config)]
+  return Math.min(Math.max(route.hours, band.minHours), band.maxHours * (1 + offTimeShare(route)))
+}
+
+/**
+ * ONE definite travel time: leg lengths x CONFIG.hoursPerPx at class 1, clamped to the band (`clampedHours`), x the ship's hyperdrive class
+ * (0.5, 1, 2, 3, 4). The GM shifts it with Advantage / Threat. `bandCheck` is the Table 7-14 band for the two ends.
  */
 export function travelTime(route: RouteResult, hyperdrive = 1, config: Config = CONFIG): { hours: number; text: string; bandCheck: string } {
-  const hours = route.hours * hyperdrive
+  const hours = clampedHours(route, config) * hyperdrive
   const band = config.bands[bandOf(route, config)]
   return { hours, text: formatTravelTime(hours), bandCheck: `${band.name}: ${band.time}` }
 }

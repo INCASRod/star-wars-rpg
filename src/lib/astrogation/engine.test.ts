@@ -1,7 +1,7 @@
 /** npx tsx --test src/lib/astrogation/engine.test.ts */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONFIG, LY_PER_PX, buildGalaxy, difficulty, formatTravelTime, plan, route, travelBand, travelTime } from './index'
+import { CONFIG, LY_PER_PX, buildGalaxy, clampedHours, difficulty, formatTravelTime, plan, route, travelBand, travelTime } from './index'
 import type { Graph, GraphNode, RouteResult } from './types'
 
 const node = (id: string, x: number, y: number, region: string | null = 'Core Worlds', sector: string | null = null, on_lane = true): GraphNode =>
@@ -111,7 +111,7 @@ describe('route: lanes first', () => {
 
 describe('time (hours per px by kind of leg, x hyperdrive class)', () => {
   const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 200, 0)], [['A', 'B', 'major'], ['B', 'C', 'minor']])
-  it('a leg takes length x the rate of its kind (major 0.0909, minor 0.3, off 0.763 h/px)', () => {
+  it('a leg takes length x the rate of its kind (major 0.0909, minor 2 x major, off 0.763 h/px)', () => {
     const r = route(graph, { id: 'A' }, { id: 'C' })
     assert.ok(Math.abs(r.hours - (100 * CONFIG.hoursPerPx.major + 100 * CONFIG.hoursPerPx.minor)) < 1e-9)
     assert.ok(Math.abs(r.legs[0].hours - 100 * 0.0909) < 1e-9)
@@ -143,11 +143,14 @@ describe('time (hours per px by kind of leg, x hyperdrive class)', () => {
   })
 })
 
+/** Bands wide open, so a test of hop thresholds or raw rates is not clamped. */
+const OPEN = { ...CONFIG, bands: CONFIG.bands.map(b => ({ ...b, minHours: 0, maxHours: 1e9 })) }
+
 describe('plan: hop route (the risky alternative)', () => {
   // A and B are 120 px apart with no lane between them; the lanes go round via C
   const around = (cy: number) => g([node('A', 0, 0), node('B', 120, 0), node('C', 60, cy)], [['A', 'C', 'major'], ['C', 'B', 'major']])
   it('a long way round by lane also offers lanes plus off-lane hops when that is much faster', () => {
-    const p = plan(around(1000), { id: 'A' }, { id: 'B' })
+    const p = plan(around(1000), { id: 'A' }, { id: 'B' }, OPEN)
     assert.deepEqual(p.primary.stops.map(s => s.id), ['A', 'C', 'B'])
     assert.ok(p.shortcut)
     assert.equal(p.shortcut!.share.off, 1)
@@ -161,11 +164,14 @@ describe('plan: hop route (the risky alternative)', () => {
     assert.equal(plan(around(40), { id: 'A' }, { id: 'B' }).shortcut, undefined)
   })
   it('a hop route that saves under 12 h and under 20% is not offered; both thresholds come from CONFIG', () => {
-    // minor lanes 2 x 139.3 px x 0.3 = 83.6 h; hop 100 px x 0.763 = 76.3 h; saves 7.3 h (8.7%)
-    const near = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 130)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
-    assert.equal(plan(near, { id: 'A' }, { id: 'B' }).shortcut, undefined)
-    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...CONFIG, hopSaveHours: 5 }).shortcut)
-    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...CONFIG, hopSaveShare: 0.05 }).shortcut)
+    // minor lanes 2 x 230.4 px x 0.1818 = 83.8 h; hop 100 px x 0.763 = 76.3 h; saves 7.5 h (8.9%)
+    const near = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 225)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+    assert.equal(plan(near, { id: 'A' }, { id: 'B' }, OPEN).shortcut, undefined)
+    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...OPEN, hopSaveHours: 5 }).shortcut)
+    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...OPEN, hopSaveShare: 0.05 }).shortcut)
+  })
+  it('clamping to the band can remove the hop: both times land on the band max, so nothing is saved', () => {
+    assert.equal(plan(around(1000), { id: 'A' }, { id: 'B' }).shortcut, undefined)
   })
   it('hops are at most hopMaxPx long: beyond it, with no lane, the trip falls back to a straight jump and there is no hop route', () => {
     const graph = g([node('A', 0, 0), node('B', 300, 0)], [])
@@ -207,6 +213,30 @@ describe('travelBand (Table 7-14)', () => {
     assert.equal(travelBand(at('Core Worlds', null, 0, 0), at(null, null, 100, 0, true)), 2)
     assert.equal(travelBand(at('Core Worlds', null, 0, 0), at(null, null, LINE, 0, true)), 3)
   })
+})
+
+describe('clampedHours (E8: time follows the band)', () => {
+  const sec = { region: 'Core Worlds', sector: 'S' }
+  const mk = (hours: number, offHours = 0, b: { region: string | null; sector: string | null } = sec): RouteResult => {
+    const r = fake({ major: 1, minor: 0, off: 0 }, false, sec.region, sec.sector, b)
+    r.hours = hours
+    r.legs = [
+      { from: 'a', to: 'b', kind: 'lane', lengthPx: 1, hours: hours - offHours, region: null },
+      ...(offHours ? [{ from: 'a', to: 'b', kind: 'off' as const, lengthPx: 1, hours: offHours, region: null }] : []),
+    ]
+    return r
+  }
+  it('minor rate is 2 x major', () => assert.ok(Math.abs(CONFIG.hoursPerPx.minor - 2 * CONFIG.hoursPerPx.major) < 1e-9))
+  it('never below the band minimum', () => assert.equal(clampedHours(mk(3)), 10))
+  it('inside the band it is unchanged', () => assert.equal(clampedHours(mk(18)), 18))
+  it('an all-lane trip never exceeds the band max', () => assert.equal(clampedHours(mk(500)), 24))
+  it('off-lane time stretches the cap: half off-lane reaches 1.5 x max', () => assert.equal(clampedHours(mk(500, 250)), 36))
+  it('between regions: 72 h minimum, 168 h maximum', () => {
+    const br = { region: 'Mid Rim', sector: null }
+    assert.equal(clampedHours(mk(20, 0, br)), 72)
+    assert.equal(clampedHours(mk(900, 0, br)), 168)
+  })
+  it('travelTime applies the hyperdrive class after the clamp', () => assert.equal(travelTime(mk(500), 2).hours, 48))
 })
 
 describe('difficulty (route sets purple, risk sets red)', () => {
