@@ -1,26 +1,30 @@
 import { CONFIG, type Config } from './config'
 import type { DifficultyResult, Hazard, RouteResult, Stop } from './types'
 
-/** Where a trip's two ends sit, for Table 7-14. A pin (uncharted) has neither sector nor region. */
+/** Where a trip's two ends sit, for Table 7-14. A pin (uncharted) has no sector or region, only a position (map px). */
 export interface BandEnd {
   region: string | null
   sector: string | null
+  x: number
+  y: number
   pin?: boolean
 }
 
-/** AoE Core Table 7-14 band index: 0 within a sector, 1 within a region, 2 between regions, 3 across the galaxy. A pin counts as across. */
+/**
+ * AoE Core Table 7-14 band index: 0 within a sector, 1 within a region, 2 between regions, 3 across the galaxy.
+ * Across = straight-line distance between the two ends is at least `acrossShare` of the galaxy's width, whatever the regions (not the route length).
+ * Otherwise the sector / region fields decide; a pin or a planet with no region is "between regions" when it is not across.
+ */
 export function travelBand(a: BandEnd, b: BandEnd, config: Config = CONFIG): number {
-  if (a.pin || b.pin || a.region === null || b.region === null) return 3
+  if (Math.hypot(a.x - b.x, a.y - b.y) >= config.acrossShare * config.galaxyWidthPx) return 3
+  if (a.pin || b.pin || a.region === null || b.region === null) return 2
   if (a.sector !== null && a.sector === b.sector) return 0
   if (a.region === b.region) return 1
-  const ra = config.rings[a.region]
-  const rb = config.rings[b.region]
-  if (ra !== undefined && rb !== undefined && Math.abs(ra - rb) >= config.acrossRingGap) return 3
   return 2
 }
 
 export function bandEnd(s: Stop): BandEnd {
-  return { region: s.region, sector: s.sector, pin: s.uncharted }
+  return { region: s.region, sector: s.sector, x: s.x, y: s.y, pin: s.uncharted }
 }
 
 export function bandOf(r: RouteResult, config: Config = CONFIG): number {

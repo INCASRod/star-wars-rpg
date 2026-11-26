@@ -17,11 +17,12 @@ const g = (nodes: GraphNode[], edges: [string, string, 'major' | 'minor', number
   }),
 })
 
+/** `uncharted` also puts the far end 60% of the galaxy away, so the trip is across the galaxy. */
 const fake = (share: RouteResult['share'], uncharted = false, region = 'Core Worlds', sector: string | null = null, b?: { region: string | null; sector: string | null }): RouteResult => ({
   found: true,
   stops: [
     { id: 'a', name: 'a', x: 0, y: 0, region, sector, uncharted },
-    { id: 'b', name: 'b', x: 1, y: 1, region: b ? b.region : region, sector: b ? b.sector : sector, uncharted: false },
+    { id: 'b', name: 'b', x: uncharted ? CONFIG.acrossShare * CONFIG.galaxyWidthPx : 1, y: 1, region: b ? b.region : region, sector: b ? b.sector : sector, uncharted: false },
   ],
   legs: [], routesUsed: [], lengthPx: 1, lengthLy: 10, hours: 1, density: 0, share, uncharted,
 })
@@ -187,13 +188,24 @@ describe('plan: hop route (the risky alternative)', () => {
 })
 
 describe('travelBand (Table 7-14)', () => {
-  it('within a sector / within a region / between regions / across the galaxy / pin', () => {
-    assert.equal(travelBand({ region: 'Core Worlds', sector: 'Corusca' }, { region: 'Core Worlds', sector: 'Corusca' }), 0)
-    assert.equal(travelBand({ region: 'Core Worlds', sector: 'Corusca' }, { region: 'Core Worlds', sector: 'Corellian' }), 1)
-    assert.equal(travelBand({ region: 'Core Worlds', sector: null }, { region: 'Mid Rim', sector: null }), 2)
-    assert.equal(travelBand({ region: 'Core Worlds', sector: null }, { region: 'Outer Rim Territories', sector: null }), 3)
-    assert.equal(travelBand({ region: 'Core Worlds', sector: null }, { region: 'Hutt Space', sector: null }), 2)
-    assert.equal(travelBand({ region: 'Core Worlds', sector: null }, { region: null, sector: null, pin: true }), 3)
+  const at = (region: string | null, sector: string | null, x: number, y: number, pin = false) => ({ region, sector, x, y, pin })
+  const LINE = CONFIG.acrossShare * CONFIG.galaxyWidthPx
+  it('within a sector / within a region / between regions', () => {
+    assert.equal(travelBand(at('Core Worlds', 'Corusca', 0, 0), at('Core Worlds', 'Corusca', 100, 0)), 0)
+    assert.equal(travelBand(at('Core Worlds', 'Corusca', 0, 0), at('Core Worlds', 'Corellian', 100, 0)), 1)
+    assert.equal(travelBand(at('Core Worlds', null, 0, 0), at('Mid Rim', null, 100, 0)), 2)
+    assert.equal(travelBand(at('Core Worlds', null, 0, 0), at('Hutt Space', null, 100, 0)), 2)
+  })
+  it('rim to core (different regions, under 60% of the galaxy) is between regions, not across', () => {
+    assert.equal(travelBand(at('Core Worlds', null, 0, 0), at('Outer Rim Territories', null, LINE - 1, 0)), 2)
+  })
+  it('across the galaxy: straight line at 60% of the width or more, whatever the regions', () => {
+    assert.equal(travelBand(at('Outer Rim Territories', null, 0, 0), at('Outer Rim Territories', null, LINE, 0)), 3)
+    assert.equal(travelBand(at('Core Worlds', 'Corusca', 0, 0), at('Core Worlds', 'Corusca', LINE + 1, 0)), 3)
+  })
+  it('a pin is between regions unless the straight line is across', () => {
+    assert.equal(travelBand(at('Core Worlds', null, 0, 0), at(null, null, 100, 0, true)), 2)
+    assert.equal(travelBand(at('Core Worlds', null, 0, 0), at(null, null, LINE, 0, true)), 3)
   })
 })
 
@@ -235,7 +247,7 @@ describe('difficulty (route sets purple, risk sets red)', () => {
   })
   it('uncharted pin endpoint = +1 upgrade, not difficulty', () => {
     const d = pool(fake({ major: 0.1, minor: 0, off: 0.9 }, true))
-    // pin = across (3 purple); off > 2/3 = +3 upgrades; uncharted +1 = 4 upgrades: 3 purple -> red, then the 4th adds a purple
+    // far pin = across (3 purple); off > 2/3 = +3 upgrades; uncharted +1 = 4 upgrades: 3 purple -> red, then the 4th adds a purple
     assert.equal(d.raw, 3)
     assert.equal(d.offUpgrades, 3)
     assert.equal(d.unchartedUpgrades, 1)
@@ -243,7 +255,7 @@ describe('difficulty (route sets purple, risk sets red)', () => {
   })
   it('difficulty above Formidable converts the excess to upgrades, no cap', () => {
     const cfg = { ...CONFIG, difficulty: { ...CONFIG.difficulty, base: 4 } }
-    const d = difficulty(fake({ major: 1, minor: 0, off: 0 }, true), none, cfg) // 4 + 3 (pin = across) = 7
+    const d = difficulty(fake({ major: 1, minor: 0, off: 0 }, true), none, cfg) // 4 + 3 (far pin = across) = 7
     assert.equal(d.raw, 7)
     assert.equal(d.excessUpgrades, 2)
     assert.equal(d.difficulty, 'Formidable')

@@ -65,17 +65,12 @@ export const CONFIG = {
     { name: 'between regions', time: '3 days to 1 week' },
     { name: 'across the galaxy', time: '1 to 3 weeks' },
   ],
-  /** The table does not define "across the galaxy": regions at least this many rings apart count (CC choice, from prompt B). */
-  acrossRingGap: 5,
-  rings: {
-    'Deep Core': 0,
-    'Core Worlds': 1,
-    Colonies: 2,
-    'Inner Rim': 3,
-    'Expansion Region': 4,
-    'Mid Rim': 5,
-    'Outer Rim Territories': 6,
-  } as Record<string, number>,
+  /**
+   * "Across the galaxy" = straight-line distance between the two ends is at least this share of the galaxy's width (Sebastian, 2026-11-26).
+   * Width = widest span of the 1,220 plotted systems in map px (Imynusoph to Abo Dreth, 2955.0, rounded; data/astrogation/wook/graph.json).
+   */
+  acrossShare: 0.6,
+  galaxyWidthPx: 2955,
 }
 
 export type Config = typeof CONFIG
